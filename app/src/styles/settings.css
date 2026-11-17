@@ -1,0 +1,256 @@
+/* 설정 화면 + 읽기 설정 변수 (공통 디자인 확정 시 교체 예정) */
+
+/* ===== 읽기 설정: 스토리·지문 화면은 이 변수를 쓰면 설정이 적용된다 =====
+ *   font-size: var(--reading-font-size);
+ *   line-height: var(--reading-line-height);
+ */
+:root {
+  --reading-font-size: 17px;
+  --reading-line-height: 1.7;
+  --danger: #c0392b;
+}
+:root[data-font-size='small'] { --reading-font-size: 15px; }
+:root[data-font-size='medium'] { --reading-font-size: 17px; }
+:root[data-font-size='large'] { --reading-font-size: 20px; }
+:root[data-line-height='normal'] { --reading-line-height: 1.7; }
+:root[data-line-height='wide'] { --reading-line-height: 2.1; }
+
+/* ===== 설정 화면 ===== */
+.settings-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+  box-sizing: border-box;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.setting-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-section-title {
+  margin: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.setting-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text-h);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.setting-card > :last-child {
+  border-bottom: none;
+}
+
+.setting-row.disabled,
+.toggle-row.disabled {
+  opacity: 0.5;
+}
+
+.setting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-label {
+  color: var(--text-h);
+}
+
+.setting-desc {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.setting-link {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text-h);
+}
+
+.setting-link.danger {
+  color: var(--danger);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.segmented button {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 12px;
+  border: none;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--border);
+}
+
+.segmented button.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.switch {
+  appearance: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--border);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+  transition: background 0.2s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch:checked::after {
+  transform: translateX(18px);
+}
+
+.switch:disabled {
+  cursor: default;
+}
+
+.text-input {
+  font: inherit;
+  font-size: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  min-width: 0;
+}
+
+.inline-edit {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 180px;
+}
+
+.inline-edit .text-input {
+  flex: 1;
+  max-width: 200px;
+}
+
+.btn-small {
+  font-size: 14px;
+  padding: 6px 12px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+}
+
+.btn-danger {
+  border: none;
+  background: var(--danger);
+  color: #fff;
+}
+
+.reading-preview {
+  margin: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--reading-font-size);
+  line-height: var(--reading-line-height);
+  color: var(--text-h);
+}
+
+.reset-list {
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.reset-list p {
+  margin: 8px 0 4px;
+}
+
+.reset-list ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.policy-section h2 {
+  font-size: 17px;
+  margin: 8px 0;
+  letter-spacing: 0;
+}
+
+.policy-section ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-h);
+}
