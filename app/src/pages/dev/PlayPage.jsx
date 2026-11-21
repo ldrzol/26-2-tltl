@@ -147,6 +147,8 @@ export default function PlayPage() {
       {step.type === 'writing' && (
         <WritingStep
           key={stepIndex}
+          storyId={episode.storyId}
+          episodeId={episodeId}
           writing={step.writing}
           saved={progress.writing?.text}
           busy={busy}
@@ -240,21 +242,48 @@ function QuestionStep({ question, saved, busy, onCheck, onNext }) {
   )
 }
 
-function WritingStep({ writing, saved, busy, onSubmit }) {
-  const [text, setText] = useState(saved ?? '')
-  const [criteria, setCriteria] = useState(writing.criteria.map(() => true))
+  function WritingStep({ writing, saved, busy, storyId, episodeId }) {
+    const [text, setText] = useState(saved ?? '')
+    const [result, setResult] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-  function submit() {
-    // [임시 AI 피드백] 실제로는 AI가 평가 기준으로 채점한다 (조성은 담당)
-    const feedback = {
-      criteria,
-      good: '지문의 내용을 바탕으로 잘 표현했어요.',
-      improve: criteria.every(Boolean) ? '' : '빠진 평가 기준을 확인하고 한 번 더 다듬어 봐요.',
-      pending: false,
+  async function submit() {
+    setLoading(true)
+    setError('')
+    setResult(null)
+
+    try {
+      const response = await fetch('/api/writing/grade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storyId,
+          episodeId,
+          userAnswer: text,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('AI 평가 요청에 실패했습니다.')
+      }
+
+      const data = await response.json()
+
+      if (!data || !Array.isArray(data.criteriaMet)) {
+        throw new Error('AI 평가 결과가 올바르지 않습니다.')
+      }
+
+      setResult(data)
+
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-    onSubmit({ text, feedback })
   }
-
   return (
     <>
       <p className="review-meta">글쓰기</p>
@@ -263,26 +292,40 @@ function WritingStep({ writing, saved, busy, onSubmit }) {
         className="text-input"
         rows={4}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value)
+          setResult(null)
+        }}
         placeholder="여기에 써보세요"
       />
+     {result && (
       <div className="setting-card">
-        <p className="setting-desc" style={{ padding: '10px 14px 0', margin: 0 }}>
-          [임시 AI 피드백] 충족한 기준
+        <p>
+          평가 결과: {result.passed ? '통과' : '미통과'}
         </p>
-        {writing.criteria.map((c, i) => (
-          <label key={c} className="setting-row quiz-choice">
-            <input
-              type="checkbox"
-              checked={criteria[i]}
-              onChange={(e) => setCriteria((arr) => arr.map((v, j) => (j === i ? e.target.checked : v)))}
-            />
-            <span>{c}</span>
-          </label>
+
+        <p>
+          충족한 기준: {result.metCount} / {writing.criteria.length}
+        </p>
+
+        {writing.criteria.map((criterion, index) => (
+          <p key={index}>
+            {result.criteriaMet[index] ? '[충족]' : '[미충족]'} {criterion}
+          </p>
         ))}
+
+        <p>AI 피드백: {result.feedback}</p>
       </div>
-      <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !text.trim()}>
-        제출
+    )}
+
+    {error && <p role="alert">{error}</p>}
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={submit}
+        disabled={busy || loading || !text.trim()}
+      >
+        {loading ? 'AI 평가 중...' : 'AI 평가받기'}
       </button>
     </>
   )
