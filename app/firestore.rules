@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Firestore 보안 규칙
+// 콘솔 > Firestore > 규칙 탭에 붙여넣거나 `firebase deploy --only firestore:rules` 로 배포
+// 새 컬렉션을 쓰려면 여기에 규칙을 추가해야 함 (없으면 기본 차단)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // 사용자 프로필: 본인 문서만 읽기/쓰기
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      // 가입 시에는 레벨 0으로만 생성 가능
+      allow create: if isOwner(uid) && request.resource.data.level == 0;
+      // 이메일·가입 방식·가입일은 변경 불가
+      allow update: if isOwner(uid)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.provider == resource.data.provider
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+
+      // 학습 진행·출석 기록: 본인 것만 (docs/data-structure.md)
+      match /progress/{episodeId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /attendance/{date} {
+        allow read, create, update: if isOwner(uid);
+        allow delete: if false;
+      }
+    }
+  }
+}

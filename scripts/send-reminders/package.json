@@ -1,0 +1,18 @@
+{
+  "name": "send-reminders",
+  "private": true,
+  "version": "1.0.0",
+  "description": "출석하지 않은 사용자에게 리마인더 푸시 알림 발송 (GitHub Actions에서 매일 실행)",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dry-run": "node index.js --dry-run",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.1"
+  }
+}

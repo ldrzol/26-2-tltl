@@ -1,121 +1,95 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { NicknameRoute, ProtectedRoute, PublicOnlyRoute } from './routes/guards'
+import { useApplySettings } from './hooks/useApplySettings'
+import { listenForegroundMessages } from './services/notificationService'
+import SplashPage from './pages/SplashPage'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
+import NicknamePage from './pages/NicknamePage'
+import SettingsPage from './pages/SettingsPage'
+import PolicyPage from './pages/PolicyPage'
+import StoryReportPage from './pages/StoryReportPage'
+import DiagnosisPlaceholder from './pages/placeholders/DiagnosisPlaceholder'
+import HomePlaceholder from './pages/placeholders/HomePlaceholder'
+import RewardTestPage from './pages/dev/RewardTestPage'
+import ResultTestPage from './pages/dev/ResultTestPage'
+import EpisodeListPage from './pages/dev/EpisodeListPage'
+import PlayPage from './pages/dev/PlayPage'
+import './styles/auth.css'
+import './styles/reward.css'
+import './styles/settings.css'
+import './styles/result.css'
 
+/** 화면에 안 보이는 앱 전역 동작: 화면 설정 적용, 앱 사용 중 알림 표시 */
+function AppEffects() {
+  const { profile } = useAuth()
+  useApplySettings(profile)
+
+  const notificationsOn = Boolean(profile?.settings?.notifications?.enabled)
+  useEffect(() => {
+    if (!notificationsOn) return
+    let unsubscribe = () => {}
+    listenForegroundMessages().then((fn) => {
+      unsubscribe = fn
+    })
+    return () => unsubscribe()
+  }, [notificationsOn])
+
+  return null
+}
+
+/**
+ * 화면 흐름
+ * /            로고(스플래시) → 로그인 상태에 따라 이동
+ * /login       로그인          (로그인 안 한 사람만)
+ * /signup      회원가입        (로그인 안 한 사람만)
+ * /nickname    닉네임 설정      (구글 첫 가입만)
+ * /diagnosis   초기 진단 테스트 (레벨 0만)
+ * /home        메인 홈          (레벨 1 이상)
+ * /settings    설정            (레벨 1 이상)
+ * /report/:storyId  이야기 완독 리포트 (레벨 1 이상)
+ * /privacy, /terms  개인정보 처리방침·이용약관 (누구나)
+ */
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <AuthProvider>
+      <AppEffects />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SplashPage />} />
+          <Route path="/privacy" element={<PolicyPage type="privacy" />} />
+          <Route path="/terms" element={<PolicyPage type="terms" />} />
 
-      <div className="ticks"></div>
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+          </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <Route element={<NicknameRoute />}>
+            <Route path="/nickname" element={<NicknamePage />} />
+          </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <Route element={<ProtectedRoute maxLevel={0} />}>
+            <Route path="/diagnosis" element={<DiagnosisPlaceholder />} />
+          </Route>
+
+          <Route element={<ProtectedRoute minLevel={1} />}>
+            <Route path="/home" element={<HomePlaceholder />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/report/:storyId" element={<StoryReportPage />} />
+            {/* 개발 서버(npm run dev)에서만 열리는 테스트 화면 */}
+            {import.meta.env.DEV && <Route path="/dev/rewards" element={<RewardTestPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/result" element={<ResultTestPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/episodes" element={<EpisodeListPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/play/:episodeId" element={<PlayPage />} />}
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
