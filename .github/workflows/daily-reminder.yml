@@ -1,0 +1,45 @@
+# 출석 리마인더: 매일 한국 시간 저녁 8시쯤, 오늘 출석 안 한 사용자에게 푸시 알림
+# 스크립트: scripts/send-reminders/
+# 필요한 Secret: FIREBASE_SERVICE_ACCOUNT (Firebase 서비스 계정 키 JSON 전체)
+
+name: Daily reminder
+
+on:
+  schedule:
+    - cron: '0 11 * * *' # UTC 11:00 = 한국 20:00 (GitHub 사정으로 몇 분~수십 분 늦을 수 있음)
+  workflow_dispatch: # Actions 탭에서 직접 실행 (테스트용)
+    inputs:
+      dry_run:
+        description: '발송하지 않고 대상만 확인'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: scripts/send-reminders
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: scripts/send-reminders/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Send reminders
+        run: node index.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          # 예약 실행은 실제 발송, 직접 실행은 dry_run 선택값을 따름
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
