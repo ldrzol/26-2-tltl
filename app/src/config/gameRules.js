@@ -15,7 +15,7 @@ export const ENERGY = {
 export const ATTENDANCE_REWARD = {
   DAILY_EXP: 10,
   BONUS_EVERY_DAYS: 5, // 누적 5일마다
-  BONUS_EXP: 30,
+  BONUS_EXP: 20,
 }
 
 // 에피소드 경험치
@@ -24,6 +24,12 @@ export const EPISODE_EXP = {
   PER_CORRECT_ANSWER: 5,
   PER_WRITING_CRITERION: 5,
   REPLAY_RATE: 0.5, // 다시 풀기는 절반
+}
+
+// 에피소드 별점: 이번 회차 정답률(객관식 + 글쓰기 기준) 기준
+export const STARS = {
+  THREE_AT: 80, // 80% 이상 ⭐⭐⭐ (6개 중 1개 틀려도 별 3개)
+  TWO_AT: 60, // 60% 이상 ⭐⭐, 그 아래는 ⭐
 }
 
 // 능력치 키 (콘텐츠 JSON의 유형 이름 → 저장용 키)

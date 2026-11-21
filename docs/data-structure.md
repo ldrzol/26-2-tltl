@@ -41,18 +41,20 @@ users/{uid}                      ← 요약 (프로필 + 레벨·에너지·이�
 | `completedEpisodeIds` | array | `["chunhyang-ep1"]` | 한 번이라도 완료한 에피소드 → 다음 에피소드 잠금 해제 |
 | `stats` | map | 아래 참고 | 누적 능력치 → 학습 결과의 "부족한 능력" |
 | `attendance` | map | `{ lastDate: "2026-11-16", streak: 3, totalDays: 8 }` | 출석 요약 |
+| `diagnosis` | map | `{ skills: { vocab: { correct, total }, ... }, completedAt }` | 초기 진단 결과 → 진단 결과 화면(사각형 차트·정답률 막대·잘하는/부족한 능력). 진단 완료 시 `level: 1` |
 
 ```js
 stats: {
   vocab:         { correct: 4, total: 5 },   // 어휘
   comprehension: { correct: 3, total: 5 },   // 내용 이해
   inference:     { correct: 1, total: 5 },   // 추론
-  writing:       { met: 7,     total: 15 }   // 글쓰기: 평가 기준 충족 개수 / 전체 기준 개수
+  writing:       { correct: 7, total: 15 }   // 글쓰기: 평가 기준 충족 개수 / 전체 기준 개수
 }
 ```
 
 - `stats`는 다시 풀기를 포함해 **풀 때마다 누적**된다.
-- 부족한 능력 = `correct / total`(글쓰기는 `met / total`)이 가장 낮은 유형.
+- 문제 수는 정해두지 않는다. 유형별로 몇 문제든 센다.
+- 부족한 능력 = `correct / total`(정답률)이 가장 낮은 유형. 계산: [`app/src/logic/result.js`](../app/src/logic/result.js)
 
 ---
 
@@ -67,7 +69,9 @@ stats: {
 | `step` | number | `2` | 에피소드 안에서 **다음에 할 단계 순서**(0부터). 순서는 콘텐츠 JSON이 정함 |
 | `answers` | map | 아래 참고 | 키 = 콘텐츠 JSON의 `questionId` |
 | `writing` | map \| null | 아래 참고 | 글쓰기 답안 + AI 피드백 |
-| `result` | map \| null | `stats`와 같은 모양 | 완료 시 이 회차 결과 |
+| `result` | map \| null | `stats`와 같은 모양 | 마지막으로 완료한 회차의 결과 (다시 풀다 그만둬도 남김) → 이야기 완독 리포트 |
+| `lastAnswers` | map \| null | `answers`와 같은 모양 | 마지막 완료 회차의 답 → 완독 리포트의 "틀린 문제 모아보기" |
+| `stars`, `bestStars` | number | `2`, `3` | 이번·최고 별점 (정답률 80% 이상 ★★★, 60% 이상 ★★, 그 외 ★) |
 | `expGained` | number | `35` | 이 회차에 얻은 경험치 |
 | `attempts` | number | `1` | 시작한 횟수 |
 | `startedAt`, `completedAt`, `updatedAt` | timestamp | | |
@@ -129,7 +133,7 @@ writing: {
 | | 보상 |
 |---|---|
 | 매일 출석 | **+10 XP** |
-| 누적 5일마다 (5, 10, 15…일째) | **+30 XP** 추가 |
+| 누적 5일마다 (5, 10, 15…일째) | **+20 XP** 추가 |
 
 ### 경험치
 | 항목 | 경험치 |
@@ -156,11 +160,27 @@ writing: {
 
 | 순간 | 저장 | 방식 |
 |---|---|---|
-| **에피소드 시작** (새로/다시) | 에너지 −1, progress 초기화(`step: 0`, `attempts +1`), `current` 설정 | transaction |
-| **이어하기** | 저장 없음. `current`와 progress의 `step`·`answers`로 화면 복원 | |
+| **에피소드 시작** (새로 · 처음부터 · 다시 풀기) | 에너지 −1, progress 초기화(`step: 0`, `attempts +1`), `current` 설정 | transaction |
+| **이어하기** | 저장 없음, 에너지 안 씀. `current`와 progress의 `step`·`answers`·`writing`으로 멈춘 단계부터 복원 | |
+| **이야기 넘기기** | `step +1` (progress와 `current` 함께) | batch |
 | **객관식 답 제출** | `answers.{questionId}`, `step +1` | 1회 쓰기 |
 | **글쓰기 제출** | `writing`, `step +1` | 1회 쓰기 |
 | **에피소드 완료** | 아래 전부 한 번에 | transaction |
+
+**결과 화면 두 가지**
+| 언제 | 화면 | 내용 |
+|---|---|---|
+| 에피소드 하나 끝날 때 | 에피소드 완료 화면 (`EpisodeResult`) | 별점, +XP·정답률·연속 출석, 문제별 ⭕❌, 이야기 진행도, 틀린 문제·글쓰기 피드백(접기) → 출석체크 |
+| 이야기(예: 춘향전) 전체를 끝냈을 때 | 완독 리포트 (`/report/:storyId`) | 에피소드별 `progress.result`를 합쳐 사각형 차트·정답률 막대 (**처음 진단과 비교**), 잘하는/부족한 능력, 에피소드별 별점, 틀린 문제 모아보기. 목록에서 다시 볼 수 있음 |
+
+**에피소드 목록의 버튼**
+| 상태 | 버튼 |
+|---|---|
+| 처음 | [시작] ⚡−1 |
+| 진행 중 (`progress.status == "in_progress"`) | [이어하기] (에너지 안 씀) · [처음부터] ⚡−1 |
+| 완료 | [다시 풀기] ⚡−1, 경험치 절반 |
+
+함수: [`app/src/services/progressService.js`](../app/src/services/progressService.js) — `startEpisode`, `loadProgress`, `saveStep`, `saveAnswer`, `saveWriting`, `completeEpisode`. 스토리·퀴즈 화면은 단계를 넘길 때 이 함수만 부르면 된다.
 
 **완료 transaction에서 바뀌는 것**
 1. progress: `status: "completed"`, `result`, `expGained`, `completedAt`
@@ -185,7 +205,15 @@ writing: {
 3. **questionId**: 전체에서 유일 (예: `chunhyang-ep1-q1`)
 4. **문제 유형**: 어휘 / 내용 이해 / 추론 / 글쓰기 → 코드에서 `vocab` / `comprehension` / `inference` / `writing`으로 매핑
 5. **정답**: 숫자 1~4 (엑셀의 ②는 `2`)
-6. **에피소드 안 순서**: 지문 → 문제들 → 글쓰기 순서가 배열로 정해져 있을 것
+6. **에피소드 안 순서 (`steps`)**: 이야기 도중에 문제가 나오므로, 이야기·문제·글쓰기가 섞인 순서가 배열로 정해져 있을 것. 진행 저장의 `step`은 이 배열의 위치다. 예시: [`app/src/content/sample-content.json`](../app/src/content/sample-content.json)
+   ```json
+   "steps": [
+     { "type": "story", "text": "숙종 임금 때 전라도 남원에…" },
+     { "type": "question", "questionId": "chunhyang-ep1-q1" },
+     { "type": "story", "text": "도령은 방자에게…" },
+     { "type": "writing", "questionId": "chunhyang-ep1-w1" }
+   ]
+   ```
 7. **글쓰기 평가 기준 개수** (현재 3개)
 
 ---
@@ -221,7 +249,7 @@ line-height: var(--reading-line-height);
   - `reminder: { lastSentDate, kind }` (users 문서): 하루 1번만 보내기 위한 기록. 스크립트만 쓴다.
 - **그 밖의 공지**: Firebase 콘솔 > Messaging에서 직접 보낸다.
 
-**학습 기록 초기화**: `progress` 전부 삭제, `level: 0`, `exp: 0`, `stats` 삭제, `completedEpisodeIds: []`, `current: null`. 레벨 0이 되므로 **초기 진단부터 다시** 한다. 계정, 닉네임, 설정, **출석 기록은 남긴다**(지우면 누적 보상을 다시 받을 수 있게 되므로).
+**학습 기록 초기화**: `progress` 전부 삭제, `level: 0`, `exp: 0`, `stats`·`diagnosis` 삭제, `completedEpisodeIds: []`, `current: null`. 레벨 0이 되므로 **초기 진단부터 다시** 한다. 계정, 닉네임, 설정, **출석 기록은 남긴다**(지우면 누적 보상을 다시 받을 수 있게 되므로).
 
 ---
 
@@ -234,5 +262,5 @@ line-height: var(--reading-line-height);
 | 3 | 오각형 능력치 5번째 축 (퀴즈 유형은 4개) | 미정 |
 | 4 | 글쓰기 "판단 보류" 기준을 충족으로 볼지 | 미충족으로 계산 |
 | 5 | 문제·에피소드 ID 규칙 (8절) | `chunhyang-ep1-q1` 형식 |
-| 6 | 초기 진단 결과를 저장하는 필드 이름 (학습 기록 초기화 때 같이 지워야 함) | 미정 |
+| 6 | 초기 진단 결과 저장 필드 (학습 기록 초기화 때 같이 지움) | `users.diagnosis` (3절) |
 | 7 | 개인정보 처리방침·이용약관 초안의 문의 이메일, AI 서비스 이름 | 미정 |

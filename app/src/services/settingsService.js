@@ -24,7 +24,7 @@ export function updateSettings(uid, changes) {
 
 /**
  * 학습 기록 초기화 → 레벨 0 (초기 진단부터 다시)
- * - 지움: progress 전부, 경험치, 레벨, 능력치, 완료 에피소드, 이어하기
+ * - 지움: progress 전부, 경험치, 레벨, 능력치, 진단 결과, 완료 에피소드, 이어하기
  * - 남김: 계정·닉네임·설정, 출석 기록 (지우면 누적 보상을 다시 받을 수 있게 되므로)
  */
 export async function resetLearning(uid) {
@@ -35,6 +35,7 @@ export async function resetLearning(uid) {
     level: 0,
     exp: 0,
     stats: deleteField(),
+    diagnosis: deleteField(), // 초기 진단부터 다시
     completedEpisodeIds: [],
     current: null,
     updatedAt: serverTimestamp(),

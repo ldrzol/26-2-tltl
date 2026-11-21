@@ -1,0 +1,854 @@
+/* 학습 결과 화면 (공통 디자인 확정 시 교체 예정) */
+
+/* 차트 색: 라이트/다크 각각 대비·명도 검증 완료 (dataviz validate_palette) */
+:root {
+  --chart-1: #aa3bff;
+  --chart-before: #8a8590; /* 비교 기준(처음 진단): 회색 점선 */
+  --chart-grid: #e5e4e7;
+  --good: #137333;
+  --bad: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --chart-1: #ad66f5;
+    --chart-grid: #2e303a;
+    --good: #4cc26a;
+    --bad: #ef6b5b;
+  }
+}
+:root[data-theme='dark'] {
+  --chart-1: #ad66f5;
+  --chart-grid: #2e303a;
+  --good: #4cc26a;
+  --bad: #ef6b5b;
+}
+
+.result-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  box-sizing: border-box;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.result-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.result-header h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0;
+}
+
+.result-story {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.result-score {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.result-score strong {
+  font-size: 22px;
+}
+
+.result-reward {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.result-exp {
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--accent-bg);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.result-levelup {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-section h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.result-section h2 .count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--bad);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.result-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ===== 레이더 차트 ===== */
+.skill-radar {
+  width: 100%;
+}
+
+.radar-grid line,
+.radar-grid path,
+.radar-grid polygon {
+  stroke: var(--chart-grid);
+}
+
+.radar-axis text {
+  fill: var(--text-h);
+  font-size: 14px;
+}
+
+.radar-series path {
+  stroke: var(--chart-1);
+  fill: var(--chart-1);
+}
+
+.radar-series circle,
+.radar-series .recharts-radar-dot {
+  fill: var(--chart-1);
+  stroke: var(--bg);
+}
+
+.chart-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  color: var(--text-h);
+}
+
+/* ===== 정답률 막대 ===== */
+.skill-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-bar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.skill-bar-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.weak-tag {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.skill-bar-track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--chart-grid);
+  overflow: hidden;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--chart-1);
+}
+
+.result-weakest {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ===== 진단 결과: 요약 · 잘하는/부족한 능력 · 능력별 설명 ===== */
+.result-summary {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-h);
+}
+
+.result-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.highlight-card {
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+}
+
+.highlight-card.strong {
+  box-shadow: inset 4px 0 0 var(--good);
+}
+
+.highlight-card.weak {
+  box-shadow: inset 4px 0 0 var(--bad);
+}
+
+.highlight-label {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.highlight-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.highlight-value span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.skill-comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skill-comments li {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.skill-comment-head {
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-h);
+}
+
+.skill-comment-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-h);
+}
+
+.level-tag {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 8px;
+  border: 1px solid currentColor;
+}
+
+.level-tag.strong {
+  color: var(--good);
+}
+
+.level-tag.normal {
+  color: var(--text);
+}
+
+.level-tag.weak {
+  color: var(--bad);
+}
+
+/* ===== 문제 다시 보기 ===== */
+.review-empty {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+}
+
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-h);
+}
+
+.review-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.review-question {
+  margin: 0;
+  font-size: var(--reading-font-size, 16px);
+  line-height: var(--reading-line-height, 1.6);
+  font-weight: 600;
+}
+
+.review-choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.review-choices li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.review-choices li.answer {
+  border-color: var(--good);
+  box-shadow: inset 3px 0 0 var(--good);
+}
+
+.review-choices li.chosen {
+  border-color: var(--bad);
+  box-shadow: inset 3px 0 0 var(--bad);
+}
+
+.choice-tag {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.review-choices li.answer .choice-tag {
+  color: var(--good);
+}
+
+.review-choices li.chosen .choice-tag {
+  color: var(--bad);
+}
+
+.review-explanation,
+.review-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.review-explanation strong {
+  margin-right: 6px;
+}
+
+.review-note {
+  color: var(--text);
+}
+
+.review-label {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.review-box {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--code-bg);
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.criteria-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.criteria-list li {
+  display: flex;
+  gap: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.result-next {
+  width: 100%;
+}
+
+/* ===== 에피소드 완료 화면 ===== */
+.result-big-emoji {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.stars {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 4px;
+}
+
+.stars.small {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.star {
+  color: var(--chart-grid);
+}
+
+.star.on {
+  color: #e5a000;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stat-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-card strong {
+  font-size: 20px;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.stat-card span {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.recap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recap li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.recap li.no {
+  border-color: var(--bad);
+}
+
+.recap li.ok {
+  border-color: var(--good);
+}
+
+.story-progress-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.story-progress {
+  display: flex;
+  gap: 4px;
+}
+
+.story-progress .seg {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--chart-grid);
+}
+
+.story-progress .seg.on {
+  background: var(--chart-1);
+}
+
+.result-fold {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.result-fold > summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text-h);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.result-fold[open] > summary {
+  margin-bottom: 12px;
+}
+
+.result-fold .count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--bad);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-actions a.btn {
+  text-decoration: none;
+}
+
+.result-actions a.auth-link {
+  text-align: center;
+}
+
+/* ===== 완독 리포트: 비교 범례 · 변화 · 에피소드 요약 ===== */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-h);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--chart-1);
+}
+
+.legend-swatch.before {
+  border-top: 2px dashed var(--chart-before);
+}
+
+.radar-series-before path {
+  stroke: var(--chart-before);
+  fill: none;
+}
+
+.skill-bar-compare {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.skill-bar-compare .up {
+  color: var(--good);
+  font-weight: 700;
+}
+
+.skill-bar-compare .down {
+  color: var(--bad);
+  font-weight: 700;
+}
+
+.episode-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.episode-summary li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.episode-summary li:last-child {
+  border-bottom: none;
+}
+
+.story-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ===== 이어하기 · 에피소드 목록 · 플레이 (개발용 임시 화면) ===== */
+.resume-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  text-decoration: none;
+  text-align: left;
+}
+
+.episode-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.episode-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.episode-item p {
+  margin: 0;
+}
+
+.episode-title {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.episode-actions {
+  display: flex;
+  gap: 6px;
+}
+
+a.btn-small {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-outline {
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.play-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.play-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.story-text {
+  font-size: var(--reading-font-size);
+  line-height: var(--reading-line-height);
+  color: var(--text-h);
+}
+
+.story-text p {
+  margin: 0 0 0.8em;
+}
+
+.play-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.play-choice {
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.play-choice.on {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  background: var(--accent-bg);
+}
+
+.play-choice:disabled {
+  cursor: default;
+}
+
+.play-choice.answer {
+  border-color: var(--good);
+  box-shadow: inset 3px 0 0 var(--good);
+}
+
+.play-choice.chosen {
+  border-color: var(--bad);
+  box-shadow: inset 3px 0 0 var(--bad);
+}
+
+.play-choice.answer .choice-tag {
+  color: var(--good);
+}
+
+.play-choice.chosen .choice-tag {
+  color: var(--bad);
+}
+
+/* 문제 풀자마자 나오는 정답·해설 */
+.answer-feedback {
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+}
+
+.answer-feedback.correct {
+  box-shadow: inset 4px 0 0 var(--good);
+}
+
+.answer-feedback.wrong {
+  box-shadow: inset 4px 0 0 var(--bad);
+}
+
+.answer-feedback-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.answer-feedback-text {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.answer-feedback-text strong {
+  margin-right: 4px;
+}
+
+/* [개발용] 결과 테스트 화면 */
+fieldset.quiz-card {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.quiz-card legend {
+  padding: 12px 14px 4px;
+  float: left;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-h);
+}
+
+.quiz-choice {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  cursor: pointer;
+  clear: both;
+}

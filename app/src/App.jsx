@@ -10,12 +10,17 @@ import SignupPage from './pages/SignupPage'
 import NicknamePage from './pages/NicknamePage'
 import SettingsPage from './pages/SettingsPage'
 import PolicyPage from './pages/PolicyPage'
+import StoryReportPage from './pages/StoryReportPage'
 import DiagnosisPlaceholder from './pages/placeholders/DiagnosisPlaceholder'
 import HomePlaceholder from './pages/placeholders/HomePlaceholder'
 import RewardTestPage from './pages/dev/RewardTestPage'
+import ResultTestPage from './pages/dev/ResultTestPage'
+import EpisodeListPage from './pages/dev/EpisodeListPage'
+import PlayPage from './pages/dev/PlayPage'
 import './styles/auth.css'
 import './styles/reward.css'
 import './styles/settings.css'
+import './styles/result.css'
 
 /** 화면에 안 보이는 앱 전역 동작: 화면 설정 적용, 앱 사용 중 알림 표시 */
 function AppEffects() {
@@ -44,6 +49,7 @@ function AppEffects() {
  * /diagnosis   초기 진단 테스트 (레벨 0만)
  * /home        메인 홈          (레벨 1 이상)
  * /settings    설정            (레벨 1 이상)
+ * /report/:storyId  이야기 완독 리포트 (레벨 1 이상)
  * /privacy, /terms  개인정보 처리방침·이용약관 (누구나)
  */
 function App() {
@@ -72,8 +78,12 @@ function App() {
           <Route element={<ProtectedRoute minLevel={1} />}>
             <Route path="/home" element={<HomePlaceholder />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/report/:storyId" element={<StoryReportPage />} />
             {/* 개발 서버(npm run dev)에서만 열리는 테스트 화면 */}
             {import.meta.env.DEV && <Route path="/dev/rewards" element={<RewardTestPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/result" element={<ResultTestPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/episodes" element={<EpisodeListPage />} />}
+            {import.meta.env.DEV && <Route path="/dev/play/:episodeId" element={<PlayPage />} />}
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
