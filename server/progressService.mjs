@@ -17,7 +17,7 @@ export function isEpisodeUnlocked(storyId, episodeId, completedEpisodeKeys = [])
         return false;
     }
     if (!isChapterUnlocked(storyId, completedEpisodeKeys)) return false;
-    
+
     const episodes = [...story.passages].sort((a, b) => a.order - b.order);
     const index = episodes.findIndex(ep => ep.id === episodeId);
 

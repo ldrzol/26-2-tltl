@@ -37,7 +37,12 @@ app.get('/api/stories/:storyId', (req, res) => {
 // 에피소드 조회 API
 app.get('/api/stories/:storyId/episodes/:episodeId', (req, res) => {
     const { storyId, episodeId } = req.params;
-    
+
+    // 프론트엔드 에피소드 ID를 원본 ID로 변환
+    const originalEpisodeId = episodeId.startsWith(`${storyId}-`)
+        ? episodeId.slice(storyId.length + 1)
+        : episodeId;
+
     // 백엔드 함수를 API와 연결
     const episode = getEpisode(storyId, originalEpisodeId);
 
@@ -58,7 +63,11 @@ app.get('/api/stories/:storyId/episodes/:episodeId', (req, res) => {
 app.get('/api/stories/:storyId/episodes/:episodeId/questions', (req, res) => {
     const { storyId, episodeId } = req.params;
 
-    const episode = getEpisode(storyId, episodeId);
+    const originalEpisodeId = episodeId.startsWith(`${storyId}-`)
+    ? episodeId.slice(storyId.length + 1)
+    : episodeId;
+
+    const episode = getEpisode(storyId, originalEpisodeId);
 
     if (!episode) {
         return res.status(404).json({
@@ -69,8 +78,8 @@ app.get('/api/stories/:storyId/episodes/:episodeId/questions', (req, res) => {
     const story = getStory(storyId);
 
     const questions = story.questions
-        .filter(q => q.passageId === episodeId) // 해당 에피소드에 속한 질문만 필터링
-        
+        .filter(q => q.passageId === originalEpisodeId) // 해당 에피소드에 속한 질문만 필터링
+
         // 프론트엔드에 필요한 정보만 전달
         .map(q => ({
             id: q.id,
@@ -114,8 +123,12 @@ app.post('/api/quiz/grade', (req, res) => {
 app.get('/api/stories/:storyId/episodes/:episodeId/writing', (req, res) => {
     const { storyId, episodeId } = req.params;
 
-    const story = getStory(storyId);
-    const episode = getEpisode(storyId, episodeId);
+    const originalEpisodeId = episodeId.startsWith(`${storyId}-`)
+        ? episodeId.slice(storyId.length + 1)
+        : episodeId;
+
+        const story = getStory(storyId);
+    const episode = getEpisode(storyId, originalEpisodeId);
 
     if (!story || !episode) {
         return res.status(404).json({
@@ -123,7 +136,7 @@ app.get('/api/stories/:storyId/episodes/:episodeId/writing', (req, res) => {
         });
     }
 
-    const writing = story.writing.find(w => w.passageId === episodeId);
+    const writing = story.writing.find(w => w.passageId === originalEpisodeId);
 
     if (!writing) {
         return res.status(404).json({
