@@ -1,4 +1,5 @@
 import { getStory } from './storyService.mjs';
+import { analyzeWritingWithAI } from './aiService.mjs';
 
 export function evaluateWriting(storyId, episodeId, criteriaMet, hold = false) {
     const story = getStory(storyId);
@@ -31,5 +32,31 @@ export function evaluateWriting(storyId, episodeId, criteriaMet, hold = false) {
         metCount,
         criteria: writing.criteria,
         sampleAnswer: writing.sampleAnswer
+    };
+}
+
+// 글쓰기 답안 채점 및 피드백 생성 함수
+// 설계원칙 : Gemini 평가 기준 충족 여부 판단하고 최종 합격 여부는 
+export async function gradeWritingAnswer(storyId, episodeId, userAnswer) {
+    const aiResult = await analyzeWritingWithAI(storyId, episodeId, userAnswer);
+
+    if (!aiResult) {
+        return null;
+    }
+
+    const gradeResult = evaluateWriting(
+        storyId,
+        episodeId,
+        aiResult.criteriaMet
+    );
+
+    if (!gradeResult) {
+        return null;
+    }
+
+    return {
+        ...gradeResult,
+        criteriaMet: aiResult.criteriaMet,
+        feedback: aiResult.feedback
     };
 }
