@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { signInWithEmail, signInWithGoogle, resetPassword } from '../services/authService'
 import { authErrorMessage } from '../utils/authErrors'
 import GoogleButton from '../components/GoogleButton'
+import logo from '../assets/figma/logo.svg'
+import { TopBar } from '../components/AppChrome'
 
 // 로그인에 성공하면 AuthContext가 바뀌고 PublicOnlyRoute가 알아서 다음 화면으로 보낸다
 export default function LoginPage() {
@@ -44,25 +46,30 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      <TopBar title="" to="/welcome" />
+      <img src={logo} alt="또랑또랑" className="auth-logo" width="150" height="42" />
+      <h1 className="auth-heading">다시 만나서 반가워요</h1>
+      <p className="auth-sub">로그인하고 오늘의 학습을 이어가요</p>
       <div className="auth-card">
-        <h1 className="auth-title">또랑또랑</h1>
-        <p className="auth-muted">로그인하고 학습을 이어가요</p>
-
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          <label>
+          <label className="field-label">
             이메일
             <input
+              className="field"
               type="email"
+              placeholder="example@email.com"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </label>
-          <label>
+          <label className="field-label">
             비밀번호
             <input
+              className="field"
               type="password"
+              placeholder="비밀번호 입력"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -73,7 +80,7 @@ export default function LoginPage() {
           {error && <p className="auth-error" role="alert">{error}</p>}
           {info && <p className="auth-info">{info}</p>}
 
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-lg btn-submit" disabled={submitting}>
             {submitting ? '로그인 중…' : '로그인'}
           </button>
         </form>
@@ -86,8 +93,8 @@ export default function LoginPage() {
 
         <GoogleButton onClick={() => run(signInWithGoogle)} disabled={submitting} />
 
-        <p className="auth-muted">
-          아직 계정이 없나요? <Link to="/signup">회원가입</Link>
+        <p className="auth-foot">
+          아직 계정이 없나요? <Link viewTransition to="/signup">회원가입</Link>
         </p>
       </div>
     </div>

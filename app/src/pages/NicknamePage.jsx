@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { updateNickname } from '../services/userService'
 import { logout } from '../services/authService'
 import { NICKNAME_MAX, validateNickname } from '../utils/nickname'
+import logo from '../assets/figma/logo.svg'
+import { TopBar } from '../components/AppChrome'
 
 // 구글 첫 가입 시 닉네임 정하기. 저장되면 needsNickname=false → 가드가 진단 화면으로 보낸다
 export default function NicknamePage() {
@@ -32,15 +34,18 @@ export default function NicknamePage() {
 
   return (
     <div className="auth-page">
+      <TopBar title="" onBack={logout} />
+      <img src={logo} alt="또랑또랑" className="auth-logo" width="150" height="42" />
+      <h1 className="auth-heading">닉네임을 정해주세요</h1>
+      <p className="auth-sub">또랑또랑에서 사용할 이름이에요</p>
       <div className="auth-card">
-        <h1 className="auth-title">닉네임 설정</h1>
-        <p className="auth-muted">또랑또랑에서 사용할 이름을 정해주세요</p>
-
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          <label>
-            닉네임 <span className="auth-hint">({NICKNAME_MAX}자 이하)</span>
+          <label className="field-label">
+            닉네임
             <input
+              className="field"
               type="text"
+              placeholder="사용할 이름"
               autoComplete="nickname"
               maxLength={NICKNAME_MAX}
               value={name}
@@ -52,7 +57,7 @@ export default function NicknamePage() {
 
           {error && <p className="auth-error" role="alert">{error}</p>}
 
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-lg btn-submit" disabled={submitting}>
             {submitting ? '저장 중…' : '시작하기'}
           </button>
         </form>

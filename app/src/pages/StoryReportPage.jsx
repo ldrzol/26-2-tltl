@@ -9,9 +9,7 @@ import SkillRadar from '../components/result/SkillRadar'
 import SkillBars from '../components/result/SkillBars'
 import SkillReportSection from '../components/result/SkillReportSection'
 import { WrongAnswers } from '../components/result/AnswerReview'
-
-// 스토리 모드 목록 화면(박초이)이 나오기 전까지는 개발용 목록으로
-const LIST_PATH = import.meta.env.DEV ? '/dev/episodes' : '/home'
+import { TopBar } from '../components/AppChrome'
 
 /**
  * 이야기 완독 리포트 (/report/:storyId) — 이야기의 모든 에피소드를 끝냈을 때
@@ -29,7 +27,8 @@ export default function StoryReportPage() {
   }, [user.uid, storyId, story])
 
   if (!story) return <p className="auth-error">없는 이야기예요: {storyId}</p>
-  if (!progress) return <p className="auth-muted" style={{ padding: 24 }}>불러오는 중…</p>
+  // 불러오는 동안 글자를 띄우면 화면이 깜빡여서 빈 배경만 보여준다
+  if (!progress) return <div className="screen" aria-busy="true"><span className="sr-only">불러오는 중…</span></div>
 
   const episodes = story.episodeIds.map((id) => ({ ep: getEpisode(id), p: progress[id] }))
   const finished = episodes.filter(({ p }) => p?.result)
@@ -53,49 +52,42 @@ export default function StoryReportPage() {
   const next = nextStory(storyId)
 
   return (
-    <div className="result-page">
-      <header className="result-header">
-        <p className="result-big-emoji" aria-hidden="true">📜</p>
-        <h1>{allDone ? `${story.title} 완독!` : `${story.title} 리포트`}</h1>
-        {!allDone && (
-          <p className="setting-desc">
-            {finished.length}/{episodes.length} 에피소드까지의 결과예요. 다 끝내면 완성돼요.
-          </p>
-        )}
-        <p className="result-summary">{report.summary}</p>
-      </header>
+    <div className="screen result-page">
+      <TopBar title={`${story.title} 리포트`} to={`/home?story=${storyId}`} divider />
+      <h2 className="report-title">{allDone ? `${story.title} 완독!` : `${profile.name} 님의 문해력`}</h2>
+      {!allDone && (
+        <p className="result-summary">
+          {finished.length}/{episodes.length} 에피소드까지의 결과예요. 다 끝내면 완성돼요.
+        </p>
+      )}
+      <p className="result-summary">{report.summary}</p>
 
-      <section className="result-section">
-        <h2>능력 분석</h2>
-        <SkillRadar skills={skills} compare={compare} />
-        <SkillBars skills={skills} compare={compare} />
-      </section>
+      <SkillRadar skills={skills} compare={compare} />
+      <SkillBars skills={skills} compare={compare} />
 
       <SkillReportSection report={report} />
 
-      <section className="result-section">
-        <h2>
-          에피소드 <span className="story-progress-count">★ {starsGot}/{episodes.length * 3}</span>
-        </h2>
-        <ul className="episode-summary">
-          {episodes.map(({ ep, p }, i) => (
-            <li key={ep.episodeId}>
-              <span>
-                ep{i + 1} · {ep.title}
-              </span>
-              <span className="stars small" aria-label={p?.bestStars ? `별 ${p.bestStars}개` : '아직 안 함'}>
-                {p?.bestStars
-                  ? [1, 2, 3].map((n) => (
-                      <span key={n} className={n <= p.bestStars ? 'star on' : 'star'} aria-hidden="true">
-              {n <= p.bestStars ? '★' : '☆'}
+      <h2 className="section-title">
+        에피소드 <span className="story-progress-count">★ {starsGot}/{episodes.length * 3}</span>
+      </h2>
+      <ul className="episode-summary card">
+        {episodes.map(({ ep, p }, i) => (
+          <li key={ep.episodeId}>
+            <span>
+              {i + 1}화 · {ep.title}
             </span>
-                    ))
-                  : '—'}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+            <span className="stars small" aria-label={p?.bestStars ? `별 ${p.bestStars}개` : '아직 안 함'}>
+              {p?.bestStars
+                ? [1, 2, 3].map((n) => (
+                    <span key={n} className={n <= p.bestStars ? 'star on' : 'star'} aria-hidden="true">
+                      ★
+                    </span>
+                  ))
+                : '—'}
+            </span>
+          </li>
+        ))}
+      </ul>
 
       {wrong.length > 0 && (
         <details className="result-fold">
@@ -108,12 +100,12 @@ export default function StoryReportPage() {
 
       <div className="result-actions">
         {allDone && next ? (
-          <Link to={LIST_PATH} className="btn btn-primary">
-            다음 이야기: {next.title} ▶
+          <Link viewTransition to={`/home?story=${next.storyId}`} className="btn btn-primary btn-lg">
+            다음 이야기: {next.title}
           </Link>
         ) : null}
-        <Link to={LIST_PATH} className={allDone && next ? 'auth-link' : 'btn btn-primary'}>
-          에피소드 목록으로
+        <Link viewTransition to={`/home?story=${storyId}`} className="btn btn-light btn-lg">
+          작품 목록으로
         </Link>
       </div>
     </div>

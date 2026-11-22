@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { BottomNav, TopBar } from '../components/AppChrome'
+import caret from '../assets/figma/caret-left-21.svg'
 import { useAuth } from '../contexts/AuthContext'
 import {
   FONT_SIZE_OPTIONS,
@@ -44,10 +46,7 @@ export default function SettingsPage() {
 
   return (
     <div className="settings-page">
-      <header className="settings-header">
-        <Link to="/home" className="auth-link" aria-label="홈으로">‹ 홈</Link>
-        <h1>설정</h1>
-      </header>
+      <TopBar title="설정" />
 
       {message && (
         <p className={message.type === 'error' ? 'auth-error' : 'auth-info'} role="status">
@@ -59,7 +58,7 @@ export default function SettingsPage() {
 
       <NotificationSection uid={user.uid} enabled={settings.notifications.enabled} notify={notify} />
 
-      <Section title="화면·읽기">
+      <Section title="화면/읽기">
         <Segmented
           label="글자 크기"
           options={FONT_SIZE_OPTIONS}
@@ -73,6 +72,7 @@ export default function SettingsPage() {
           onChange={(v) => save({ lineHeight: v })}
         />
         <p className="reading-preview">
+          <span className="reading-preview-label">줄 간격 예시</span>
           춘향은 자라면서 글과 바느질, 음악까지 두루 익혔고, 용모와 마음씨가 고을에 소문이 날 만큼 뛰어났다.
         </p>
         <Segmented
@@ -86,20 +86,20 @@ export default function SettingsPage() {
       <InstallSection />
 
       <Section title="정보">
-        <Link to="/privacy" className="setting-row setting-link">개인정보 처리방침 <span>›</span></Link>
-        <Link to="/terms" className="setting-row setting-link">이용약관 <span>›</span></Link>
+        <Link viewTransition to="/privacy" className="setting-row setting-link">개인정보 처리방침 <Caret /></Link>
+        <Link viewTransition to="/terms" className="setting-row setting-link">이용약관 <Caret /></Link>
         <div className="setting-row">
           <span className="setting-label">버전</span>
-          <span className="setting-desc">{APP_VERSION} · Team MZ</span>
+          <span className="setting-value">{APP_VERSION}  Team MZ</span>
         </div>
       </Section>
 
       <Section title="기타">
         <button type="button" className="setting-row setting-link" onClick={logout}>
-          로그아웃
+          로그아웃 <Caret />
         </button>
-        <button type="button" className="setting-row setting-link danger" onClick={() => setShowReset(true)}>
-          학습 기록 초기화
+        <button type="button" className="setting-row setting-link" onClick={() => setShowReset(true)}>
+          학습 기록 초기화 <Caret />
         </button>
       </Section>
 
@@ -107,12 +107,19 @@ export default function SettingsPage() {
         // 초기화되면 레벨 0 → 가드가 자동으로 초기 진단 화면으로 보낸다
         <ResetLearningDialog onConfirm={() => resetLearning(user.uid)} onCancel={() => setShowReset(false)} />
       )}
+
+      <BottomNav />
     </div>
   )
 }
 
+function Caret() {
+  return <img src={caret} alt="" className="icon flip caret" width="21" height="21" />
+}
+
 function AccountSection({ user, profile, notify }) {
   const [name, setName] = useState(profile.name)
+  const [editing, setEditing] = useState(false)
   const [busy, setBusy] = useState(false)
   const changed = name.trim() !== profile.name
 
@@ -125,6 +132,7 @@ function AccountSection({ user, profile, notify }) {
     try {
       await updateNickname(user.uid, trimmed)
       notify('닉네임을 바꿨어요.')
+      setEditing(false)
     } catch (err) {
       console.error(err)
       notify('닉네임을 저장하지 못했어요.', 'error')
@@ -147,32 +155,38 @@ function AccountSection({ user, profile, notify }) {
 
   return (
     <Section title="계정">
-      <form className="setting-row" onSubmit={saveName}>
-        <label className="setting-label" htmlFor="nickname">닉네임</label>
-        <div className="inline-edit">
-          <input
-            id="nickname"
-            className="text-input"
-            value={name}
-            maxLength={NICKNAME_MAX}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button type="submit" className="btn btn-small" disabled={!changed || busy}>저장</button>
-        </div>
-      </form>
+      {editing ? (
+        <form className="setting-row" onSubmit={saveName}>
+          <label className="setting-label" htmlFor="nickname">닉네임</label>
+          <div className="inline-edit">
+            <input
+              id="nickname"
+              className="text-input"
+              value={name}
+              maxLength={NICKNAME_MAX}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+            <button type="submit" className="btn btn-small" disabled={!changed || busy}>저장</button>
+          </div>
+        </form>
+      ) : (
+        <button type="button" className="setting-row setting-link" onClick={() => setEditing(true)}>
+          닉네임 <span className="setting-value">{profile.name}</span> <Caret />
+        </button>
+      )}
       <div className="setting-row">
         <span className="setting-label">이메일</span>
-        <span className="setting-desc">{user.email}</span>
+        <span className="setting-value">{user.email}</span>
       </div>
-      {profile.provider === 'password' ? (
+      <div className="setting-row">
+        <span className="setting-label">로그인 방식</span>
+        <span className="setting-value">{profile.provider === 'password' ? '이메일' : 'Google'}</span>
+      </div>
+      {profile.provider === 'password' && (
         <button type="button" className="setting-row setting-link" onClick={sendReset} disabled={busy}>
-          비밀번호 변경 <span className="setting-desc">재설정 메일 보내기 ›</span>
+          비밀번호 변경 <span className="setting-value">재설정 메일 보내기</span> <Caret />
         </button>
-      ) : (
-        <div className="setting-row">
-          <span className="setting-label">로그인 방식</span>
-          <span className="setting-desc">Google 계정</span>
-        </div>
       )}
     </Section>
   )

@@ -23,7 +23,7 @@ export default function SkillBars({ skills, compare }) {
                 {SKILL_LABELS[key]}
                 {isWeakest && <span className="weak-tag">💡 가장 부족</span>}
               </span>
-              <span className="skill-bar-value">{a === null ? '기록 없음' : `${a}%`}</span>
+              <span className="skill-bar-value">{a === null ? '기록 없음' : `${a} %`}</span>
             </div>
             <div
               className="skill-bar-track"

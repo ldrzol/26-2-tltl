@@ -1,123 +1,95 @@
-/* 출석체크 완료 · 레벨 표시 (공통 디자인 확정 시 교체 예정) */
-
-.reward-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  z-index: 10;
-}
+/* 출석체크 완료 창 · 에너지 배지(개발용 화면) — Figma 카드 모양 (흰 카드 + 보라 그림자) */
 
 .reward-card {
   width: 100%;
   max-width: 340px;
-  background: var(--bg);
-  border-radius: 20px;
-  padding: 28px 20px 20px;
+  background: var(--surface);
+  border-radius: 26px;
+  box-shadow: 0 6px 0 var(--primary-dark), 0 18px 40px rgba(60, 20, 110, 0.25);
+  padding: 22px 22px 18px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow);
+  align-items: center;
+  gap: 10px;
+  text-align: center;
 }
 
-.reward-emoji {
-  font-size: 48px;
-  line-height: 1;
+.reward-art {
+  width: 160px !important;
+  height: 145px !important;
 }
 
 .reward-title {
-  margin: 0;
-  font-size: 26px;
-  color: var(--text-h);
+  font-size: 24px;
+  font-weight: 800;
 }
 
 .reward-exp {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--accent);
+  animation: pop-in 0.5s var(--ease-pop) 0.35s backwards;
 }
 
 .reward-bonus {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-h);
-  background: var(--accent-bg);
-  border-radius: 8px;
-  padding: 6px 10px;
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  background: var(--primary-soft);
+  color: var(--accent-text);
 }
 
 .reward-stats {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0;
 }
 
 .reward-stats div {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  border: 2px solid var(--border);
+  border-bottom-width: 4px;
+  border-radius: 16px;
 }
 
 .reward-stats strong {
-  font-size: 20px;
-  color: var(--text-h);
+  font-size: 22px;
+  font-weight: 800;
 }
 
 .reward-stats span,
 .reward-hint {
   font-size: 13px;
   color: var(--text);
-  margin: 0;
 }
 
 .reward-dots {
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .reward-dots .dot {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 2px solid var(--accent-border);
+  background: var(--track);
 }
 
 .reward-dots .dot.on {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--primary-2);
+  box-shadow: 0 3px 0 var(--primary-2-dark);
+  animation: pop-in 0.4s var(--ease-pop) backwards;
 }
-
-.level-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: var(--text-h);
-}
-
-.level-badge-lv {
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.level-bar {
-  flex: 1;
-  height: 10px;
-  border-radius: 5px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.level-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  transition: width 0.4s ease;
-}
+.reward-dots .dot.on:nth-child(2) { animation-delay: 0.08s; }
+.reward-dots .dot.on:nth-child(3) { animation-delay: 0.16s; }
+.reward-dots .dot.on:nth-child(4) { animation-delay: 0.24s; }
+.reward-dots .dot.on:nth-child(5) { animation-delay: 0.32s; }
 
 .level-badge-exp {
   font-size: 12px;
@@ -125,6 +97,7 @@
   white-space: nowrap;
 }
 
+/* [개발용] 에너지 배지 */
 .energy-badge {
   display: inline-flex;
   align-items: center;
@@ -147,11 +120,4 @@
   margin-left: 6px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-h);
-}
-
-.auth-form label.row {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
 }

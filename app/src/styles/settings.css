@@ -1,4 +1,4 @@
-/* 설정 화면 + 읽기 설정 변수 (공통 디자인 확정 시 교체 예정) */
+/* 설정 화면 + 읽기 설정 변수 — Figma "설정 화면" */
 
 /* ===== 읽기 설정: 스토리·지문 화면은 이 변수를 쓰면 설정이 적용된다 =====
  *   font-size: var(--reading-font-size);
@@ -7,56 +7,70 @@
 :root {
   --reading-font-size: 17px;
   --reading-line-height: 1.7;
-  --danger: #c0392b;
+  --danger: #cb0000;
 }
 :root[data-font-size='small'] { --reading-font-size: 15px; }
 :root[data-font-size='medium'] { --reading-font-size: 17px; }
 :root[data-font-size='large'] { --reading-font-size: 20px; }
+:root[data-line-height='narrow'] { --reading-line-height: 1.4; }
 :root[data-line-height='normal'] { --reading-line-height: 1.7; }
 :root[data-line-height='wide'] { --reading-line-height: 2.1; }
 
 /* ===== 설정 화면 ===== */
 .settings-page {
+  flex: 1;
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 16px 16px 48px;
+  padding: 0 20px 120px;
   box-sizing: border-box;
   text-align: left;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: var(--bg);
 }
 
+.settings-page .top-bar {
+  padding-top: 20px;
+}
+
+.settings-page .top-bar-title {
+  font-weight: 800;
+}
+
+/* 예전 헤더 (개발용 화면) */
 .settings-header {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-top: 20px;
 }
 
 .settings-header h1 {
-  margin: 0;
-  font-size: 24px;
-  letter-spacing: 0;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .setting-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .setting-section-title {
   margin: 0 4px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--text);
 }
 
+/* 행 묶음: 입체 카드 */
 .setting-card {
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 18px;
   overflow: hidden;
+  background: var(--surface);
 }
 
 .setting-row {
@@ -64,9 +78,10 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  gap: 6px 12px;
+  min-height: 50px;
+  padding: 6px 12px 6px 16px;
+  border-bottom: 2px solid var(--line);
   font-size: 15px;
   color: var(--text-h);
   box-sizing: border-box;
@@ -94,15 +109,30 @@
   color: var(--text-h);
 }
 
+.setting-value,
 .setting-desc {
+  font-size: 15px;
+  color: var(--text-placeholder);
+}
+
+.setting-text .setting-desc {
   font-size: 13px;
   color: var(--text);
 }
 
+.setting-value {
+  margin-left: auto;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* › 가 붙는 행 */
 .setting-link {
   background: none;
   border: none;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--line);
   font: inherit;
   font-size: 15px;
   text-align: left;
@@ -111,42 +141,74 @@
   color: var(--text-h);
 }
 
+.setting-link .caret {
+  margin-left: auto;
+  flex: none;
+}
+
+.setting-link .setting-value + .caret {
+  margin-left: 0;
+}
+
+.setting-link {
+  transition: background 0.15s;
+}
+
+.setting-link:hover {
+  background: var(--field);
+}
+.setting-link .caret {
+  transition: translate 0.15s;
+}
+
+.setting-link:hover .caret {
+  translate: 3px 0;
+}
+
 .setting-link.danger {
   color: var(--danger);
 }
 
+/* 작게 · 보통 · 크게 (65×38, 선택 #d8b3ff) */
 .segmented {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
+  margin-left: auto;
+}
+
+.segmented {
+  gap: 2px;
+  padding: 3px;
+  border-radius: 14px;
+  background: var(--btn-gray);
 }
 
 .segmented button {
   font: inherit;
   font-size: 14px;
-  padding: 6px 12px;
+  font-weight: 800;
+  width: 58px;
+  height: 36px;
   border: none;
-  background: var(--bg);
+  border-radius: 11px;
+  background: transparent;
   color: var(--text);
   cursor: pointer;
-}
-
-.segmented button + button {
-  border-left: 1px solid var(--border);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .segmented button.on {
-  background: var(--accent);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: 0 2px 0 var(--primary-dark);
 }
 
+/* 토글 51×26, 켜짐 #c289ff */
 .switch {
   appearance: none;
-  width: 44px;
+  width: 51px;
   height: 26px;
-  border-radius: 13px;
-  background: var(--border);
+  border-radius: 20px;
+  background: var(--line);
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
@@ -157,21 +219,22 @@
 .switch::after {
   content: '';
   position: absolute;
-  top: 3px;
+  top: 2.5px;
   left: 3px;
-  width: 20px;
-  height: 20px;
+  width: 21px;
+  height: 21px;
   border-radius: 50%;
   background: #fff;
-  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: transform 0.25s var(--ease-pop);
 }
 
 .switch:checked {
-  background: var(--accent);
+  background: var(--primary-2);
 }
 
 .switch:checked::after {
-  transform: translateX(18px);
+  transform: translateX(24px);
 }
 
 .switch:disabled {
@@ -182,9 +245,9 @@
   font: inherit;
   font-size: 16px;
   padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
   color: var(--text-h);
   min-width: 0;
 }
@@ -202,28 +265,29 @@
   max-width: 200px;
 }
 
-.btn-small {
-  font-size: 14px;
-  padding: 6px 12px;
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 8px;
-}
-
 .btn-danger {
   border: none;
   background: var(--danger);
   color: #fff;
 }
 
+/* 줄 간격 예시 */
 .reading-preview {
   margin: 0;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 18px;
+  font-weight: 400;
+  border-bottom: 2px solid var(--line);
   font-size: var(--reading-font-size);
   line-height: var(--reading-line-height);
   color: var(--text-h);
+}
+
+.reading-preview-label {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.4;
+  margin-bottom: 6px;
 }
 
 .reset-list {
@@ -241,10 +305,14 @@
   padding-left: 20px;
 }
 
+/* 개인정보 처리방침 · 이용약관 */
+.policy-page {
+  padding-bottom: 40px;
+}
+
 .policy-section h2 {
   font-size: 17px;
   margin: 8px 0;
-  letter-spacing: 0;
 }
 
 .policy-section ul {

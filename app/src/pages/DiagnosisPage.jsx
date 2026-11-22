@@ -5,6 +5,8 @@ import { completeDiagnosis } from '../services/diagnosisService'
 import { getDiagnostic, getPassage } from '../content/diagnostic'
 import { buildDiagnosisRecord, scoreDiagnostic, toSkills } from '../logic/diagnostic'
 import DiagnosisResult from '../components/result/DiagnosisResult'
+import { ProgressBar, TopBar } from '../components/AppChrome'
+import cat from '../assets/figma/cat-node.png'
 
 const MARKS = ['①', '②', '③', '④']
 const STORAGE_KEY = 'ddorang-diagnosis-answers'
@@ -87,23 +89,22 @@ export default function DiagnosisPage() {
 
   if (phase === 'intro') {
     return (
-      <div className="auth-page">
-        <div className="auth-card">
-          <h1 className="auth-title">초기 진단 테스트</h1>
-          <p className="auth-muted">
-            {profile.name}님의 지금 문해력을 확인해요.
-            <br />
-            지문 {data.passages.length}개, 문제 {questions.length}개예요.
-            <br />
-            점수보다 내 실력을 아는 게 목적이니 편하게 풀어 보세요.
-          </p>
-          <button type="button" className="btn btn-primary" onClick={() => setPhase('quiz')}>
-            {answeredCount > 0 ? '이어서 풀기' : '시작하기'}
-          </button>
-          <button type="button" className="auth-link" onClick={logout}>
-            로그아웃
-          </button>
-        </div>
+      <div className="screen diag-intro">
+        <TopBar title="초기 학습 진단" />
+        <img src={cat} alt="" className="diag-intro-art" />
+        <p className="diag-intro-text">
+          {profile.name}님의 지금 문해력을 확인해요.
+          <br />
+          지문 {data.passages.length}개, 문제 {questions.length}개예요.
+          <br />
+          점수보다 내 실력을 아는 게 목적이니 편하게 풀어 보세요.
+        </p>
+        <button type="button" className="btn btn-primary btn-lg" onClick={() => setPhase('quiz')}>
+          {answeredCount > 0 ? '이어서 풀기' : '시작하기'}
+        </button>
+        <button type="button" className="auth-link" onClick={logout}>
+          로그아웃
+        </button>
       </div>
     )
   }
@@ -114,46 +115,42 @@ export default function DiagnosisPage() {
   const isLast = index === questions.length - 1
 
   return (
-    <div className="diag-page">
-      <header className="diag-progress">
-        <span>
-          {index + 1} / {questions.length}
-        </span>
-        <div
-          className="diag-progress-track"
-          role="progressbar"
-          aria-label="진행도"
-          aria-valuemin={0}
-          aria-valuemax={questions.length}
-          aria-valuenow={index + 1}
-        >
-          <div className="diag-progress-fill" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
-        </div>
-      </header>
+    <div className="quiz-page">
+      <TopBar title="초기 학습 진단" />
+      <span className="quiz-count">
+        {index + 1}/{questions.length}
+      </span>
+      <ProgressBar ratio={(index + 1) / questions.length} label="진행도" />
 
-      <section className="diag-passage" aria-label="지문">
-        <p className="diag-passage-title">
+      <p className="quiz-stem" id={`stem-${q.id}`}>
+        {index + 1}번 문제.{'\n'}
+        {q.stem}
+      </p>
+
+      <section className="quiz-box" aria-label="지문">
+        <p className="quiz-box-title">
           {passage.title} · {passage.author}
         </p>
-        <p className="diag-passage-text">{passage.text}</p>
+        <p className="quiz-box-text">{passage.text}</p>
       </section>
 
-      <fieldset className="diag-question">
-        <legend className="diag-stem">{q.stem}</legend>
-        <div className="diag-options">
-          {q.options.map((o) => (
-            <label key={o.no} className={`diag-option${chosen === o.no ? ' selected' : ''}`}>
-              <input type="radio" name={q.id} checked={chosen === o.no} onChange={() => choose(q.id, o.no)} />
-              <span className="mark">{MARKS[o.no - 1]}</span>
-              <span>{o.text}</span>
-            </label>
-          ))}
-        </div>
+      <fieldset className="quiz-options" aria-labelledby={`stem-${q.id}`}>
+        {q.options.map((o) => (
+          <label key={o.no} className={`quiz-option${chosen === o.no ? ' selected' : ''}`}>
+            <input type="radio" name={q.id} checked={chosen === o.no} onChange={() => choose(q.id, o.no)} />
+            <span className="mark">{MARKS[o.no - 1]}</span>
+            <span>{o.text}</span>
+          </label>
+        ))}
       </fieldset>
 
-      <nav className="diag-nav">
-        <button type="button" className="btn diag-prev" onClick={() => setIndex(index - 1)} disabled={index === 0}>
-          이전
+      {isLast && answeredCount < questions.length && (
+        <p className="quiz-hint">아직 풀지 않은 문제가 {questions.length - answeredCount}개 있어요.</p>
+      )}
+
+      <nav className="quiz-nav">
+        <button type="button" className="btn btn-gray" onClick={() => setIndex(index - 1)} disabled={index === 0}>
+          이전 문제
         </button>
         {isLast ? (
           <button
@@ -166,13 +163,10 @@ export default function DiagnosisPage() {
           </button>
         ) : (
           <button type="button" className="btn btn-primary" onClick={() => setIndex(index + 1)} disabled={chosen === null}>
-            다음
+            다음 문제
           </button>
         )}
       </nav>
-      {isLast && answeredCount < questions.length && (
-        <p className="auth-hint diag-hint">아직 풀지 않은 문제가 {questions.length - answeredCount}개 있어요.</p>
-      )}
     </div>
   )
 }

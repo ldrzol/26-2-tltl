@@ -2,7 +2,7 @@
 
 export const DEFAULT_SETTINGS = {
   fontSize: 'medium', // small | medium | large
-  lineHeight: 'normal', // normal | wide
+  lineHeight: 'normal', // narrow | normal | wide
   theme: 'system', // system | light | dark
   notifications: {
     enabled: false,
@@ -16,6 +16,7 @@ export const FONT_SIZE_OPTIONS = [
 ]
 
 export const LINE_HEIGHT_OPTIONS = [
+  { value: 'narrow', label: '좁게' },
   { value: 'normal', label: '보통' },
   { value: 'wide', label: '넓게' },
 ]
