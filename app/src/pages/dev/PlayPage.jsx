@@ -5,6 +5,7 @@ import { getEpisode } from '../../content'
 import {
   completeEpisode,
   loadProgress,
+  retryEpisode,
   saveAnswer,
   saveStep,
   saveWriting,
@@ -63,12 +64,49 @@ export default function PlayPage() {
   async function run(save, patch) {
     setBusy(true)
     setError('')
+
     try {
+      // Firebase에 학습 진행 상태 저장
       await save()
+
+      // 화면에 표시할 진행 상태 갱신
       const next = { ...progress, ...patch }
       setProgress(next)
-      // 마지막 단계까지 끝나면 완료 처리 → 결과 화면
-      if (next.step >= total) setDone(await completeEpisode(user.uid, episode))
+
+      // 마지막 단계라면 에피소드 완료 조건 확인
+      if (next.step >= total) {
+        const completion = await completeEpisode(user.uid, episode)
+        setDone(completion)
+      }
+
+    } catch (e) {
+      console.error(e)
+      setError(e.message)
+
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function retry() {
+    const confirmed = window.confirm(
+      '에너지 소모 없이 에피소드를 처음부터 재도전하시겠습니까? 기존 답안은 초기화됩니다.'
+    )
+
+    if (!confirmed) return
+
+    setBusy(true)
+    setError('')
+
+    try {
+      await retryEpisode(user.uid, episode)
+
+      setProgress(prev => ({
+        ...prev,
+        step: 0,
+        answers: {},
+        writing: null,
+      }))
     } catch (e) {
       console.error(e)
       setError(e.message)
@@ -77,13 +115,17 @@ export default function PlayPage() {
     }
   }
 
-  // 모든 단계를 마쳤는데 완료 처리 전에 꺼졌던 경우
-  if (stepIndex >= total) {
+    // 모든 단계를 마쳤는데 완료 처리 전에 꺼졌던 경우
+    if (stepIndex >= total) {
     return (
       <div className="auth-page">
         <div className="auth-card">
-          <p className="auth-muted">모든 단계를 마쳤어요.</p>
+          <p className="auth-muted">
+            학습 결과를 확인하거나 무료로 재도전할 수 있습니다.
+          </p>
+
           {error && <p className="auth-error">{error}</p>}
+
           <button
             type="button"
             className="btn btn-primary"
@@ -91,6 +133,15 @@ export default function PlayPage() {
             onClick={() => run(async () => {}, {})}
           >
             결과 보기
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={busy}
+            onClick={retry}
+          >
+            재도전
           </button>
         </div>
       </div>
@@ -242,7 +293,7 @@ function QuestionStep({ question, saved, busy, onCheck, onNext }) {
   )
 }
 
-  function WritingStep({ writing, saved, busy, storyId, episodeId }) {
+  function WritingStep({ writing, saved, busy, storyId, episodeId, onSubmit }) {
     const [text, setText] = useState(saved ?? '')
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -319,14 +370,34 @@ function QuestionStep({ question, saved, busy, onCheck, onNext }) {
     )}
 
     {error && <p role="alert">{error}</p>}
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={submit}
-        disabled={busy || loading || !text.trim()}
-      >
-        {loading ? 'AI 평가 중...' : 'AI 평가받기'}
-      </button>
+      {!result?.passed && (
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={submit}
+          disabled={busy || loading || !text.trim()}
+        >
+          {loading ? 'AI 평가 중...' : 'AI 평가받기'}
+        </button>
+      )}
+      {result?.passed && (
+        <button
+          type="button"
+          className="btn btn-primary"
+          disabled={busy || loading}
+          onClick={() => onSubmit({
+            text,
+            feedback: {
+              criteria: result.criteriaMet,
+              good: result.feedback,
+              improve: '',
+              pending: false,
+            },
+          })}
+        >
+          평가 결과 저장하고 다음으로
+        </button>
+      )}
     </>
   )
 }
