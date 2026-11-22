@@ -11,7 +11,7 @@ import NicknamePage from './pages/NicknamePage'
 import SettingsPage from './pages/SettingsPage'
 import PolicyPage from './pages/PolicyPage'
 import StoryReportPage from './pages/StoryReportPage'
-import DiagnosisPlaceholder from './pages/placeholders/DiagnosisPlaceholder'
+import DiagnosisPage from './pages/DiagnosisPage'
 import HomePlaceholder from './pages/placeholders/HomePlaceholder'
 import RewardTestPage from './pages/dev/RewardTestPage'
 import ResultTestPage from './pages/dev/ResultTestPage'
@@ -21,6 +21,7 @@ import './styles/auth.css'
 import './styles/reward.css'
 import './styles/settings.css'
 import './styles/result.css'
+import './styles/diagnosis.css'
 
 /** 화면에 안 보이는 앱 전역 동작: 화면 설정 적용, 앱 사용 중 알림 표시 */
 function AppEffects() {
@@ -72,7 +73,7 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute maxLevel={0} />}>
-            <Route path="/diagnosis" element={<DiagnosisPlaceholder />} />
+            <Route path="/diagnosis" element={<DiagnosisPage />} />
           </Route>
 
           <Route element={<ProtectedRoute minLevel={1} />}>

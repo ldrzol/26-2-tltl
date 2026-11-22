@@ -41,7 +41,7 @@ users/{uid}                      ← 요약 (프로필 + 레벨·에너지·이�
 | `completedEpisodeIds` | array | `["chunhyang-ep1"]` | 한 번이라도 완료한 에피소드 → 다음 에피소드 잠금 해제 |
 | `stats` | map | 아래 참고 | 누적 능력치 → 학습 결과의 "부족한 능력" |
 | `attendance` | map | `{ lastDate: "2026-11-16", streak: 3, totalDays: 8 }` | 출석 요약 |
-| `diagnosis` | map | `{ skills: { vocab: { correct, total }, ... }, completedAt }` | 초기 진단 결과 → 진단 결과 화면(사각형 차트·정답률 막대·잘하는/부족한 능력). 진단 완료 시 `level: 1` |
+| `diagnosis` | map | `{ skills: { vocab: { correct, total }, ... }, type, grades, startLevel, answers, ..., completedAt }` | 초기 진단 결과 → 진단 결과 화면(형·영역별 등급·사각형 차트·정답률 막대·틀린 문제 해설). 진단 완료 시 `level: 1`. 필드 설명은 [`diagnosis.md`](./diagnosis.md) |
 
 ```js
 stats: {
@@ -262,5 +262,5 @@ line-height: var(--reading-line-height);
 | 3 | 오각형 능력치 5번째 축 (퀴즈 유형은 4개) | 미정 |
 | 4 | 글쓰기 "판단 보류" 기준을 충족으로 볼지 | 미충족으로 계산 |
 | 5 | 문제·에피소드 ID 규칙 (8절) | `chunhyang-ep1-q1` 형식 |
-| 6 | 초기 진단 결과 저장 필드 (학습 기록 초기화 때 같이 지움) | `users.diagnosis` (3절) |
+| 6 | 초기 진단 결과 저장 필드 (학습 기록 초기화 때 같이 지움) | `users.diagnosis` — 확정, [`diagnosis.md`](./diagnosis.md) |
 | 7 | 개인정보 처리방침·이용약관 초안의 문의 이메일, AI 서비스 이름 | 미정 |
