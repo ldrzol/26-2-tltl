@@ -52,7 +52,26 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+}
+
+/* 닉네임 + 경험치 숫자 한 줄 */
+.level-chip-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.level-chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+  line-height: 1.1;
 }
 
 .level-chip-bar {
@@ -65,6 +84,7 @@
 }
 
 .level-chip-exp {
+  flex: none;
   font-size: 11px;
   font-weight: 800;
   color: var(--text);
@@ -82,7 +102,7 @@
   box-sizing: border-box;
   border-radius: 20px;
   background: var(--primary);
-  box-shadow: 0 5px 0 var(--primary-dark);
+  box-shadow: 0 4px 0 var(--primary-dark);
   color: var(--primary-ink);
   text-decoration: none;
   position: relative;
