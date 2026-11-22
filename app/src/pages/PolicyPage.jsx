@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { TopBar } from '../components/AppChrome'
 
 /**
  * 개인정보 처리방침 · 이용약관 (초안 — 팀 검토 필요)
@@ -88,10 +89,7 @@ export default function PolicyPage({ type }) {
 
   return (
     <div className="settings-page policy-page">
-      <header className="settings-header">
-        <button type="button" className="auth-link" onClick={() => navigate(-1)}>‹ 뒤로</button>
-        <h1>{doc.title}</h1>
-      </header>
+      <TopBar title={doc.title} onBack={() => navigate(-1)} />
       <p className="setting-desc">최종 수정: {doc.updated}</p>
       {doc.sections.map((s) => (
         <section key={s.h} className="policy-section">

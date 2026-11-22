@@ -1,0 +1,596 @@
+/* 공통 UI — 둥근 글꼴 · 입체 버튼/카드 · 애니메이션 (Figma 보라 테마) */
+
+/* ===== 애니메이션 ===== */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes bounce-in {
+  0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-8px) scale(1.02); }
+  80% { transform: translateY(2px); }
+  100% { transform: none; }
+}
+/* float·nudge는 translate 속성만 써서 원래 transform(뒤집기 등)과 겹치지 않게 */
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-6deg); }
+  75% { transform: rotate(6deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes shine {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(380%); }
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0); }
+  50% { transform: scale(1.15) rotate(12deg); }
+}
+@keyframes nudge {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 4px 0; }
+}
+
+/* 화면 전환: 이전 화면과 새 화면을 짧게 겹쳐서 바꿈 (깜빡임 없이) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+  animation-timing-function: ease;
+}
+
+/* 하단 바는 화면이 바뀌어도 제자리에 그대로 */
+.bottom-nav {
+  view-transition-name: bottom-nav;
+}
+
+::view-transition-group(bottom-nav) {
+  animation: none;
+}
+
+/* 움직임 줄이기 설정을 켠 사람에게는 애니메이션 끄기 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 화면 틀 ===== */
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 28px;
+  box-sizing: border-box;
+  text-align: left;
+  background: var(--bg);
+}
+
+.screen-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 하단 바가 있는 화면: 내용이 바에 가리지 않게 */
+.screen.has-nav {
+  padding-bottom: 112px;
+}
+
+.icon {
+  display: block;
+}
+
+:root[data-theme='dark'] .icon {
+  filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .icon {
+    filter: invert(1);
+  }
+}
+
+/* ===== 입체 버튼 (아래 4px 테두리 → 누르면 내려감) ===== */
+.btn {
+  --btn-edge: var(--border);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  min-height: 52px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-h);
+  background: var(--btn-light);
+  box-shadow: var(--shadow-btn);
+  text-decoration: none;
+  box-sizing: border-box;
+  margin-bottom: 4px; /* 그림자 자리 */
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease, background 0.15s ease;
+}
+
+.btn:not(:disabled):hover {
+  filter: brightness(1.03);
+}
+.btn:disabled {
+  cursor: default;
+  background: var(--btn-gray);
+  color: var(--text-faint);
+  --btn-edge: var(--btn-gray-dark);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  --btn-edge: var(--primary-dark);
+  background: linear-gradient(180deg, #e4cdff 0%, var(--primary) 55%, #ceA2ff 100%);
+  color: var(--primary-ink);
+}
+
+.btn-gray {
+  --btn-edge: var(--btn-gray-dark);
+  background: var(--btn-gray);
+  color: var(--text-h);
+}
+
+.btn-light,
+.btn-outline {
+  --btn-edge: var(--border);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text-h);
+}
+
+/* 큰 버튼 (로그인·시작하기 등) */
+.btn-lg {
+  min-height: 56px;
+  font-size: 17px;
+}
+
+/* 알약 모양 (가입 화면) */
+.btn-pill {
+  border-radius: 61px;
+}
+
+.btn-small {
+  --btn-edge: var(--primary-dark);
+  min-height: 38px;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: var(--primary);
+  box-shadow: 0 3px 0 var(--btn-edge);
+  margin-bottom: 3px;
+}
+.btn-small.btn-outline {
+  --btn-edge: var(--border);
+  background: var(--surface);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* 글자 버튼 */
+.auth-link,
+.text-link {
+  align-self: center;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.auth-link:hover,
+.text-link:hover {
+  color: var(--accent);
+}
+
+.auth-link:disabled {
+  opacity: 0.5;
+}
+
+/* ===== 입력 ===== */
+.field {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 16px; /* 16px 이상이어야 iOS 자동 확대 없음 */
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--field);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  box-sizing: border-box;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.field::placeholder {
+  color: var(--text-placeholder);
+  opacity: 1;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--primary-2);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+textarea.field {
+  height: auto;
+  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.7;
+  resize: vertical;
+}
+
+/* 입력 위 라벨 */
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+/* ===== 메시지 ===== */
+.auth-error,
+.auth-info {
+  margin: 0;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.auth-error {
+  color: var(--bad);
+  background: var(--bad-bg);
+}
+
+.auth-info {
+  color: var(--text-h);
+  background: var(--primary-soft);
+}
+
+.auth-muted {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.auth-hint {
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* ===== 카드 (2px 테두리 + 아래 4px) ===== */
+.card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom-width: 4px;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.card-text {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-h);
+  line-height: 1.6;
+}
+
+.section-title {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 12px 0 0;
+}
+
+/* 평가 태그: 잘해요(초록) · 연습 필요(빨강) · 보통(회색) */
+.tag,
+.level-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tag.strong,
+.level-tag.strong {
+  color: var(--good-dark);
+  background: var(--good-bg);
+}
+
+.tag.weak,
+.level-tag.weak {
+  color: var(--bad);
+  background: var(--bad-bg);
+}
+
+.tag.normal,
+.level-tag.normal {
+  color: var(--text);
+  background: var(--btn-gray);
+}
+
+/* ===== 진행 바 (두툼 + 반짝 줄) ===== */
+.progress-track {
+  height: 14px;
+  border-radius: 50px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.progress-fill,
+.level-bar-fill,
+.skill-bar-fill {
+  position: relative;
+  height: 100%;
+  border-radius: 50px;
+  background: var(--primary-2);
+  transition: width 0.5s var(--ease-pop);
+  transform-origin: left;
+  overflow: hidden;
+}
+
+/* 결과 화면 막대만 처음 열릴 때 차오름 (문제 진행 바는 문제마다 다시 차오르지 않게) */
+.level-bar-fill,
+.skill-bar-fill {
+  animation: grow-x 0.7s ease backwards;
+}
+
+/* 윗부분 하이라이트 */
+.progress-fill::before,
+.level-bar-fill::before,
+.skill-bar-fill::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 3px;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* 반짝: 화면이 열릴 때 한 번만 지나감 (끝나면 다시 바깥에 숨음) */
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  transform: translateX(-120%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shine 1.2s ease-out 0.6s 1;
+}
+
+/* ===== 상단 바 ===== */
+.top-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 14px 0 8px;
+}
+
+.top-bar.divider {
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-bottom: 2px solid var(--border);
+  background: var(--surface);
+}
+
+.top-bar-title {
+  font-size: 19px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* 뒤로가기: 둥근 네모 (40×40) */
+.top-bar-btn {
+  position: absolute;
+  left: 0;
+  top: calc(50% + 3px);
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--btn-gray);
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.top-bar-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+.top-bar-btn:hover {
+  background: var(--btn-gray-dark);
+}
+
+.top-bar.divider .top-bar-btn {
+  left: 16px;
+}
+
+.top-bar-right {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+/* ===== 하단 바 ===== */
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  width: min(338px, calc(100% - 32px));
+  height: 70px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border: 2px solid var(--border);
+  border-bottom-width: 4px;
+  border-radius: 52px;
+  z-index: 20;
+}
+
+.bottom-nav-item {
+  width: 86px;
+  height: 50px;
+  border-radius: 40px;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.bottom-nav-item.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+
+/* ===== 에너지 별 ===== */
+.energy-stars {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 36px;
+  align-items: center;
+}
+
+
+/* ===== 레벨 바 ===== */
+.level-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.level-badge-lv {
+  font-weight: 800;
+  color: var(--accent-text);
+}
+
+.level-bar {
+  flex: 1;
+  height: 12px;
+  border-radius: 50px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+/* ===== 별점 ===== */
+.stars {
+  display: inline-flex;
+  gap: 4px;
+  font-size: 30px;
+  color: var(--track);
+  margin: 0;
+}
+
+.stars.small {
+  font-size: 15px;
+  gap: 1px;
+}
+
+.star.on {
+  color: #ffc83d;
+  text-shadow: 0 2px 0 #e6a400;
+}
+
+/* ===== 확인 창 (모달) ===== */
+.reward-overlay,
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 45, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+  animation: fade-in 0.2s ease backwards;
+}
+
+.reward-overlay > * {
+  animation: bounce-in 0.5s var(--ease-pop) backwards;
+}

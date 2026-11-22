@@ -231,7 +231,7 @@ writing: {
 | 필드 | 값 | 기본값 | 설명 |
 |---|---|---|---|
 | `fontSize` | `small` / `medium` / `large` | `medium` | 지문 글자 크기 (15 / 17 / 20px) |
-| `lineHeight` | `normal` / `wide` | `normal` | 지문 줄 간격 (1.7 / 2.1) |
+| `lineHeight` | `narrow` / `normal` / `wide` | `normal` | 지문 줄 간격 (1.4 / 1.7 / 2.1) |
 | `theme` | `system` / `light` / `dark` | `system` | 테마 |
 | `notifications.enabled` | boolean | `false` | 알림 받기 (켜기/끄기만) |
 

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 /** 로그인 상태·레벨에 따라 가야 할 첫 화면 */
 // eslint-disable-next-line react-refresh/only-export-components
 export function landingPath(user, profile) {
-  if (!user) return '/login'
+  if (!user) return '/welcome'
   if (!profile) return null // 프로필 문서 생성 대기 중
   if (profile.needsNickname) return '/nickname'
   return profile.level >= 1 ? '/home' : '/diagnosis'
@@ -31,7 +31,7 @@ export function PublicOnlyRoute() {
 export function NicknameRoute() {
   const { user, profile, loading } = useAuth()
   if (loading) return <FullScreenLoading />
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/welcome" replace />
   if (!profile) return <FullScreenLoading />
   if (!profile.needsNickname) return <Navigate to={landingPath(user, profile)} replace />
   return <Outlet />
@@ -41,7 +41,7 @@ export function NicknameRoute() {
 export function ProtectedRoute({ minLevel = 0, maxLevel = Infinity }) {
   const { user, profile, loading } = useAuth()
   if (loading) return <FullScreenLoading />
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/welcome" replace />
   if (!profile) return <FullScreenLoading />
   if (profile.needsNickname || profile.level < minLevel || profile.level > maxLevel) {
     return <Navigate to={landingPath(user, profile)} replace />

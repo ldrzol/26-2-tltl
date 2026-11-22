@@ -37,7 +37,7 @@ export default function EpisodeListPage() {
     setBusy(episode.episodeId)
     try {
       await startEpisode(user.uid, episode)
-      navigate(`/dev/play/${episode.episodeId}`)
+      navigate(`/play/${episode.episodeId}`)
     } catch (e) {
       console.error(e)
       setError(e.message)
@@ -57,7 +57,7 @@ export default function EpisodeListPage() {
 
     try {
       await retryEpisode(user.uid, episode)
-      navigate(`/dev/play/${episode.episodeId}`)
+      navigate(`/play/${episode.episodeId}`)
     } catch (e) {
       console.error(e)
       setError(e.message)
@@ -146,7 +146,7 @@ export default function EpisodeListPage() {
                         </button>
                       ) : inProgress ? (
                         <>
-                          <Link to={`/dev/play/${id}`} className="btn btn-small">이어하기</Link>
+                          <Link to={`/play/${id}`} className="btn btn-small">이어하기</Link>
                           <button type="button" className="btn btn-small btn-outline" onClick={() => retry(ep)} disabled={busy !== null}>
                             재도전
                           </button>
