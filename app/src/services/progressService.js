@@ -16,7 +16,7 @@ import { applySpendEnergy } from './energyService'
 import { applyEpisodeRewards } from './rewardService'
 import { applyEpisodeResult } from './resultService'
 import { aggregateEpisode, starsFor } from '../logic/result'
-import { getStory } from '../content'
+import { getStory, listStories } from '../content'
 import { episodeExp } from '../config/gameRules'
 import { todayKey } from '../utils/date'
 
@@ -35,6 +35,21 @@ import { todayKey } from '../utils/date'
 
 export const progressDoc = (uid, episodeId) => doc(db, 'users', uid, 'progress', episodeId)
 
+export function isEpisodeUnlocked(episodeId, completedEpisodeIds = []) {
+  const episodeOrder = listStories().flatMap(story => story.episodeIds)
+  const index = episodeOrder.indexOf(episodeId)
+
+  if (index === -1 || !Array.isArray(completedEpisodeIds)) {
+    return false
+  }
+
+  const completedSet = new Set(completedEpisodeIds)
+
+  return episodeOrder
+    .slice(0, index)
+    .every(id => completedSet.has(id))
+}
+
 /** 에피소드 시작 (새로 시작 · 처음부터 · 다시 풀기): 에너지 1개 사용, 진행 초기화 */
 export function startEpisode(uid, episode, today = todayKey()) {
   return runTransaction(db, async (tx) => {
@@ -43,7 +58,15 @@ export function startEpisode(uid, episode, today = todayKey()) {
     const progSnap = await tx.get(progressDoc(uid, episode.episodeId))
     if (!userSnap.exists()) throw new Error('사용자 문서가 없습니다.')
 
-    const remaining = applySpendEnergy(tx, uid, userSnap.data(), today) // 부족하면 EnergyError
+    // Firebase에 저장된 완료 에피소드 목록 확인
+    const completedEpisodeIds = userSnap.data().completedEpisodeIds ?? []
+
+    // 이전 에피소드를 완료하지 않았다면 시작 차단
+    if (!isEpisodeUnlocked(episode.episodeId, completedEpisodeIds)) {
+      throw new Error('이전 에피소드를 먼저 완료해야 합니다.')
+    }
+
+    const remaining = applySpendEnergy(tx, uid, userSnap.data(), today)
     const prev = progSnap.data() ?? {}
 
     tx.set(progressDoc(uid, episode.episodeId), {
@@ -69,9 +92,67 @@ export function startEpisode(uid, episode, today = todayKey()) {
   })
 }
 
-/** 저장된 진행 불러오기 (이어하기). 없으면 null */
+// 에피소드 무료 재도전
+export function retryEpisode(uid, episode) {
+  return runTransaction(db, async (tx) => {
+    const userRef = userDoc(uid)
+    const episodeRef = progressDoc(uid, episode.episodeId)
+
+    const userSnap = await tx.get(userRef)
+    const progressSnap = await tx.get(episodeRef)
+
+    if (!userSnap.exists() || !progressSnap.exists()) {
+      throw new Error('재도전할 학습 기록이 없습니다.')
+    }
+
+    // 잠긴 에피소드는 재도전 불가
+    const completedIds = userSnap.data().completedEpisodeIds ?? []
+
+    if (!isEpisodeUnlocked(episode.episodeId, completedIds)) {
+      throw new Error('잠긴 에피소드는 재도전할 수 없습니다.')
+    }
+
+    // 진행 중인 에피소드만 재도전 가능
+    if (progressSnap.data().status !== 'in_progress') {
+      throw new Error('진행 중인 에피소드만 재도전할 수 있습니다.')
+    }
+
+    // 진행 상태 초기화
+    tx.update(episodeRef, {
+      step: 0,
+      answers: {},
+      writing: null,
+      attempts: (progressSnap.data().attempts ?? 0) + 1,
+      startedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+
+    // 이어하기 위치도 첫 단계로 변경
+    tx.update(userRef, {
+      current: {
+        episodeId: episode.episodeId,
+        step: 0,
+      },
+    })
+  })
+}
+
+// 저장된 진행 불러오기 (이어하기)
 export async function loadProgress(uid, episodeId) {
+  const userSnap = await getDoc(userDoc(uid))
+
+  if (!userSnap.exists()) return null
+
+  // Firebase에 저장된 완료 에피소드 확인
+  const completedEpisodeIds = userSnap.data().completedEpisodeIds ?? []
+
+  // 잠긴 에피소드라면 진행 기록을 불러오지 않음
+  if (!isEpisodeUnlocked(episodeId, completedEpisodeIds)) {
+    return null
+  }
+
   const snap = await getDoc(progressDoc(uid, episodeId))
+
   return snap.exists() ? snap.data() : null
 }
 
@@ -117,9 +198,33 @@ export function completeEpisode(uid, episode, today = todayKey()) {
     const user = userSnap.data()
     const progress = progSnap.data()
     if (progress.status === 'completed') throw new Error('이미 완료한 에피소드예요.')
-
+    if (!isEpisodeUnlocked(episode.episodeId, user.completedEpisodeIds ?? [])) {
+      throw new Error('잠긴 에피소드는 완료할 수 없습니다.')
+    }
     const result = aggregateEpisode(episode, progress.answers, progress.writing?.feedback)
-    const isReplay = (user.completedEpisodeIds ?? []).includes(episode.episodeId)
+
+    // 객관식 3문제를 모두 맞혔는지 확인
+    const quizPassed =
+      result.questionCount === 3 &&
+      result.correctCount === 3
+
+    // 글쓰기 평가 기준 3개 중 2개 이상 충족했는지 확인
+    const writingPassed =
+      result.writingTotal === 3 &&
+      result.writingMet >= 2 &&
+      progress.writing?.feedback?.pending !== true
+
+    // 에피소드의 마지막 단계까지 진행했는지 확인
+    const finishedSteps = progress.step >= episode.steps.length
+
+    // 하나라도 충족하지 못했다면 완료 처리 중단
+    if (!quizPassed || !writingPassed || !finishedSteps) {
+      throw new Error(
+        '학습을 통과하지 못했습니다. 에피소드 목록에서 무료로 재도전할 수 있습니다.'
+      )
+    }
+
+  const isReplay = (user.completedEpisodeIds ?? []).includes(episode.episodeId)
     const exp = episodeExp({
       correctCount: result.correctCount,
       writingMetCount: result.writingMet,

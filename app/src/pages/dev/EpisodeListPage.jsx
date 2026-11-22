@@ -4,7 +4,7 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { getEpisode, listStories } from '../../content'
-import { startEpisode } from '../../services/progressService'
+import { startEpisode, retryEpisode } from '../../services/progressService'
 import EnergyBadge from '../../components/EnergyBadge'
 
 /**
@@ -45,7 +45,41 @@ export default function EpisodeListPage() {
     }
   }
 
+  async function retry(episode) {
+    const confirmed = window.confirm(
+      '기존 학습 진행 상황이 초기화됩니다. 에너지 소모 없이 재도전하시겠습니까?'
+    )
+
+    if (!confirmed) return
+
+    setError('')
+    setBusy(episode.episodeId)
+
+    try {
+      await retryEpisode(user.uid, episode)
+      navigate(`/dev/play/${episode.episodeId}`)
+    } catch (e) {
+      console.error(e)
+      setError(e.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const completedSet = new Set(profile.completedEpisodeIds ?? [])
+
+  // 에피소드 모두 완료되었는지 확인
+  const episodeOrder = listStories().flatMap(story => story.episodeIds)
+
+  function isUnlocked(episodeId) {
+    const index = episodeOrder.indexOf(episodeId)
+
+    if (index === -1) return false
+
+    return episodeOrder
+      .slice(0, index)
+      .every(id => completedSet.has(id))
+  }
 
   return (
     <div className="settings-page">
@@ -80,16 +114,19 @@ export default function EpisodeListPage() {
                 const p = progress[id]
                 const inProgress = p?.status === 'in_progress'
                 const completed = completedSet.has(id)
+                const unlocked = isUnlocked(id)
                 return (
                   <li key={id} className="episode-item">
                     <div>
                       <p className="episode-title">{ep.title}</p>
                       <p className="setting-desc">
-                        {inProgress
-                          ? `진행 중 · ${p.step}/${ep.steps.length}단계`
-                          : completed
-                            ? '완료'
-                            : '아직 안 했어요'}
+                        {!unlocked
+                          ? '잠김 · 이전 에피소드를 완료해 주세요'
+                          : inProgress
+                            ? `진행 중 · ${p.step}/${ep.steps.length}단계`
+                            : completed
+                              ? '완료'
+                              : '아직 안 했어요'}
                         {p?.bestStars ? (
                           <span className="stars small" aria-label={`최고 별 ${p.bestStars}개`}>
                             {' '}
@@ -103,11 +140,15 @@ export default function EpisodeListPage() {
                       </p>
                     </div>
                     <div className="episode-actions">
-                      {inProgress ? (
+                      {!unlocked ? (
+                        <button type="button" className="btn btn-small" disabled>
+                          잠김
+                        </button>
+                      ) : inProgress ? (
                         <>
                           <Link to={`/dev/play/${id}`} className="btn btn-small">이어하기</Link>
-                          <button type="button" className="btn btn-small btn-outline" onClick={() => start(ep)} disabled={busy !== null}>
-                            처음부터 ⚡−1
+                          <button type="button" className="btn btn-small btn-outline" onClick={() => retry(ep)} disabled={busy !== null}>
+                            재도전
                           </button>
                         </>
                       ) : (

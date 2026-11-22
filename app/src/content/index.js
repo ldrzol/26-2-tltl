@@ -2,7 +2,7 @@
  * 콘텐츠 읽기 — 앱의 다른 코드는 콘텐츠 JSON을 직접 읽지 않고 반드시 여기를 거친다.
  * 팀의 진짜 콘텐츠 JSON이 오면 import와 normalize 함수만 고치면 된다.
  */
-import raw from './sample-content.json'
+import raw from './sourceAdapter.mjs'
 
 // 콘텐츠의 문제 유형 이름 → 저장·집계용 키 (config/gameRules.js의 SKILLS)
 const TYPE_TO_SKILL = {
