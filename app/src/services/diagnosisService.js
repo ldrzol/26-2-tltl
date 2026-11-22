@@ -3,12 +3,15 @@ import { userDoc } from './userService'
 
 /**
  * 초기 진단 완료: 진단 결과 저장 + 레벨 0 → 1
- * users.diagnosis = { skills: { vocab: { correct, total }, ... }, completedAt }
- * ⚠️ 필드 이름은 진단 담당(전예랑)과 맞출 것 — docs/data-structure.md 11절
+ *
+ * record = logic/diagnostic.js의 buildDiagnosisRecord(data, result) 결과
+ *   { version, skills, grades, type, weakestSkill, startLevel, answers, errorTags }
+ * → users.diagnosis = { ...record, completedAt }
+ * 필드 설명: docs/data-structure.md 3절 · docs/diagnosis.md
  */
-export function completeDiagnosis(uid, skills) {
+export function completeDiagnosis(uid, record) {
   return updateDoc(userDoc(uid), {
-    diagnosis: { skills, completedAt: serverTimestamp() },
+    diagnosis: { ...record, completedAt: serverTimestamp() },
     level: 1,
     updatedAt: serverTimestamp(),
   })

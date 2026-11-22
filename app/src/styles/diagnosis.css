@@ -1,0 +1,219 @@
+/* 초기 진단 테스트 화면 + 결과 추가 영역 (공통 디자인 확정 시 교체 예정) */
+
+.diag-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+  box-sizing: border-box;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.diag-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.diag-progress-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.diag-progress-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.diag-passage {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--code-bg);
+}
+
+.diag-passage-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.diag-passage-text {
+  margin: 0;
+  font-size: var(--reading-font-size, 17px);
+  line-height: var(--reading-line-height, 1.7);
+  color: var(--text-h);
+  white-space: pre-wrap;
+}
+
+.diag-question {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.diag-stem {
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: var(--reading-font-size, 17px);
+  line-height: var(--reading-line-height, 1.7);
+  font-weight: 600;
+  color: var(--text-h);
+  white-space: pre-wrap;
+}
+
+.diag-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diag-option {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-h);
+  font-size: 15px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.diag-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.diag-option:focus-within {
+  outline: 2px solid var(--accent-border);
+}
+
+.diag-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.diag-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.diag-nav .btn {
+  flex: 1;
+}
+
+.diag-prev {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.diag-hint {
+  margin: 0;
+  text-align: center;
+}
+
+/* ===== 결과: 형 · 영역별 등급 ===== */
+.diag-type {
+  text-align: center;
+  padding: 20px 16px;
+  border-radius: 16px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+}
+
+.diag-type-label {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.diag-type-name {
+  margin: 4px 0 8px;
+  font-size: 26px;
+  color: var(--text-h);
+  letter-spacing: 0;
+}
+
+.diag-type-desc {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.diag-grades {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diag-grade {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text-h);
+}
+
+.diag-grade-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diag-grade-area {
+  font-weight: 600;
+}
+
+.diag-grade-score {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.diag-grade-msg,
+.diag-reason {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.diag-weakest {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.diag-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  margin-right: 4px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+.review-question.diag-stem {
+  margin: 0;
+}
