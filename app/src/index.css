@@ -50,7 +50,6 @@
   --btn-light: #fff;
   --good: #47cb00;
   --bad: #e03131;
-  --shadow-btn: 0 4px 0 var(--btn-edge, var(--border));
   --shadow-soft: 0 2px 3.9px #d8b3ff;
   --radius: 16px;
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);

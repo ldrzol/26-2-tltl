@@ -104,7 +104,7 @@ export default function HomePage() {
   return (
     <div className="screen has-nav home-page">
       <div className="home-top">
-        <LevelChip exp={profile.exp ?? 0} level={profile.level} />
+        <LevelChip name={profile.name} exp={profile.exp ?? 0} level={profile.level} />
         <EnergyStars energy={profile.energy} />
       </div>
 

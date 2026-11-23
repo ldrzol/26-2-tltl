@@ -266,7 +266,7 @@
 }
 
 .btn-danger {
-  border: none;
+  --btn-edge: #a51d1d;
   background: var(--danger);
   color: #fff;
 }

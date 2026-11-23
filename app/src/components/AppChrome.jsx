@@ -9,6 +9,7 @@ import iconDots from '../assets/figma/icon-dots.svg'
 import iconX from '../assets/figma/icon-x.svg'
 import caretLeft from '../assets/figma/caret-left-28.svg'
 import energyStar from '../assets/figma/energy-full.svg'
+import energyEmpty from '../assets/figma/energy-empty.svg'
 
 /** 하단 바: 출석(도장) · 홈 · 설정(…) — Figma "하단 바" */
 export function BottomNav() {
@@ -68,28 +69,34 @@ export function ProgressBar({ ratio, label, className = '' }) {
 }
 
 /** 에너지: 남은 개수만큼 보라 별 */
+/** 에너지: 하루 최대 개수만큼 별 — 남은 것은 채운 보라 별, 쓴 것은 테두리만 */
 export function EnergyStars({ energy, today = todayKey() }) {
   const now = currentEnergy(energy, today)
+  const max = Math.max(ENERGY.DAILY_MAX, now)
+  const used = max - now
   return (
-    <div className="energy-stars" aria-label={`에너지 ${now}개 (하루 ${ENERGY.DAILY_MAX}개)`} role="img">
-      {Array.from({ length: now }, (_, i) => (
-        <img key={i} src={energyStar} alt="" width="26" height="27" />
+    <div className="energy-stars" aria-label={`에너지 ${max}개 중 ${now}개 남음`} role="img">
+      {Array.from({ length: max }, (_, i) => (
+        <img key={i} src={i < used ? energyEmpty : energyStar} alt="" width="26" height="27" />
       ))}
     </div>
   )
 }
 
 /** 레벨 칩: Lv.N + 다음 레벨까지 경험치 바 (홈 상단, 에너지 왼쪽) */
-export function LevelChip({ exp = 0, level = 1 }) {
+export function LevelChip({ name, exp = 0, level = 1 }) {
   const { current, needed, ratio } = levelProgress({ exp, level })
   return (
     <div className="level-chip" title={`다음 레벨까지 ${needed - current} XP`}>
       <span className="level-chip-lv">Lv.{level}</span>
       <span className="level-chip-body">
-        <ProgressBar ratio={ratio} label={`레벨 ${level} 경험치 ${current}/${needed}`} className="level-chip-bar" />
-        <span className="level-chip-exp">
-          {current}/{needed} XP
+        <span className="level-chip-head">
+          <span className="level-chip-name">{name}</span>
+          <span className="level-chip-exp">
+            {current}/{needed} XP
+          </span>
         </span>
+        <ProgressBar ratio={ratio} label={`레벨 ${level} 경험치 ${current}/${needed}`} className="level-chip-bar" />
       </span>
     </div>
   )
